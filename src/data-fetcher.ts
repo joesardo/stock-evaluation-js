@@ -21,7 +21,11 @@ export class DataFetcher {
     try {
       const fetcher = new AlphaVantageDataFetcher(apiKey);
       const fundamentals = await fetcher.fetchFundamentals(symbol);
-      return await fetcher.parseStockData(symbol, fundamentals);
+      
+      // Try to fetch real-time price, but don't block if it fails (API rate limits)
+      const latestPrice = await fetcher.fetchLatestPrice(symbol).catch(() => 0);
+      
+      return await fetcher.parseStockData(symbol, fundamentals, latestPrice);
     } catch (error) {
       throw new Error(
         `Failed to fetch data for ${symbol}: ${error instanceof Error ? error.message : String(error)}`
@@ -83,7 +87,39 @@ export class AlphaVantageDataFetcher {
     }
   }
 
-  async parseStockData(symbol: string, fundamentals: any): Promise<StockData> {
+  async fetchLatestPrice(symbol: string): Promise<number> {
+    try {
+      const response = await axios.get(this.baseUrl, {
+        params: {
+          function: 'GLOBAL_QUOTE',
+          symbol: symbol.toUpperCase(),
+          apikey: this.apiKey
+        },
+        timeout: 10000
+      });
+
+      const quote = response.data['Global Quote'];
+      
+      // Debug: Log the response to see format
+      if (!quote || Object.keys(quote).length === 0) {
+        console.log(`No quote data for ${symbol}, API response:`, response.data);
+        return 0;
+      }
+
+      const price = parseFloat(quote['05. price'] || quote.price || 0);
+      if (price > 0) {
+        return price;
+      }
+      
+      console.log(`Empty price for ${symbol}, quote data:`, quote);
+      return 0;
+    } catch (error) {
+      console.error(`Error fetching latest price: ${error}`);
+      return 0; // Return 0 if price fetch fails
+    }
+  }
+
+  async parseStockData(symbol: string, fundamentals: any, latestPrice: number): Promise<StockData> {
     // Alpha Vantage field names mapping
     const safeParse = (value: any): number | null => {
       if (value === undefined || value === null || value === 'None' || value === '') return null;
@@ -91,9 +127,9 @@ export class AlphaVantageDataFetcher {
       return isNaN(parsed) ? null : parsed;
     };
 
-    // Calculate current price from analyst target or use 50-day moving average as proxy
-    const currentPrice = safeParse(fundamentals.AnalystTargetPrice) || 
-                        safeParse(fundamentals['50DayMovingAverage']) || 0;
+    // Use real-time price from GLOBAL_QUOTE endpoint
+    // If price is 0, it means API rate limit was hit or price fetch failed
+    const currentPrice = latestPrice;
 
     // ROE comes as decimal (0.34 = 34%), need to multiply by 100
     const roe = safeParse(fundamentals.ReturnOnEquityTTM);

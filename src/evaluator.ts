@@ -199,7 +199,14 @@ export class Evaluator {
     lines.push('');
 
     lines.push(`Company: ${result.company_name}`);
-    lines.push(`Current Price: $${result.price.toFixed(2)}`);
+    
+    // Add warning if price is unavailable (API rate limit hit)
+    if (result.price === 0) {
+      lines.push(`Current Price: $0.00 ⚠️ (API rate limit reached - price unavailable)`);
+    } else {
+      lines.push(`Current Price: $${result.price.toFixed(2)}`);
+    }
+    
     lines.push(`Evaluation Date: ${result.timestamp.toLocaleDateString()}`);
     lines.push(`Data Confidence: ${result.confidence.toFixed(1)}%`);
     lines.push('');
