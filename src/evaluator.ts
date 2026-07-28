@@ -116,6 +116,57 @@ export class Evaluator {
       });
     }
 
+    // Evaluate Profit Margin
+    if (stock.profit_margin !== null && this.criteria.profit_margin) {
+      const score = Calculator.scoreMetric(
+        stock.profit_margin,
+        this.criteria.profit_margin.thresholds,
+        this.criteria.profit_margin.inverseScore || false
+      );
+      metrics.push({
+        name: 'Profit Margin',
+        description: this.criteria.profit_margin.description,
+        value: stock.profit_margin,
+        score,
+        weight: this.criteria.profit_margin.weight,
+        max_score: score * this.criteria.profit_margin.weight
+      });
+    }
+
+    // Evaluate Earnings Growth
+    if (stock.earnings_growth !== null && this.criteria.earnings_growth) {
+      const score = Calculator.scoreMetric(
+        stock.earnings_growth,
+        this.criteria.earnings_growth.thresholds,
+        this.criteria.earnings_growth.inverseScore || false
+      );
+      metrics.push({
+        name: 'Earnings Growth',
+        description: this.criteria.earnings_growth.description,
+        value: stock.earnings_growth,
+        score,
+        weight: this.criteria.earnings_growth.weight,
+        max_score: score * this.criteria.earnings_growth.weight
+      });
+    }
+
+    // Evaluate Revenue Growth
+    if (stock.revenue_growth !== null && this.criteria.revenue_growth) {
+      const score = Calculator.scoreMetric(
+        stock.revenue_growth,
+        this.criteria.revenue_growth.thresholds,
+        this.criteria.revenue_growth.inverseScore || false
+      );
+      metrics.push({
+        name: 'Revenue Growth',
+        description: this.criteria.revenue_growth.description,
+        value: stock.revenue_growth,
+        score,
+        weight: this.criteria.revenue_growth.weight,
+        max_score: score * this.criteria.revenue_growth.weight
+      });
+    }
+
     // Calculate overall score
     const overall_score = Calculator.calculateWeightedScore(metrics);
     const recommendation = Calculator.getRecommendation(overall_score);

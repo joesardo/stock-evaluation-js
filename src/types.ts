@@ -13,6 +13,9 @@ export interface StockData {
   market_cap: number | null;
   fifty_two_week_high: number | null;
   fifty_two_week_low: number | null;
+  profit_margin: number | null;
+  earnings_growth: number | null;
+  revenue_growth: number | null;
 }
 
 export interface MetricScore {

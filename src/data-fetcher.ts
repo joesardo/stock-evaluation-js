@@ -103,6 +103,18 @@ export class AlphaVantageDataFetcher {
     const dividendYield = safeParse(fundamentals.DividendYield);
     const dividendYieldPercent = dividendYield ? dividendYield * 100 : 0;
 
+    // Profit margin comes as decimal (0.393 = 39.3%)
+    const profitMargin = safeParse(fundamentals.ProfitMargin);
+    const profitMarginPercent = profitMargin ? profitMargin * 100 : null;
+
+    // Earnings growth comes as decimal (0.234 = 23.4%)
+    const earningsGrowth = safeParse(fundamentals.QuarterlyEarningsGrowthYOY);
+    const earningsGrowthPercent = earningsGrowth ? earningsGrowth * 100 : null;
+
+    // Revenue growth comes as decimal (0.183 = 18.3%)
+    const revenueGrowth = safeParse(fundamentals.QuarterlyRevenueGrowthYOY);
+    const revenueGrowthPercent = revenueGrowth ? revenueGrowth * 100 : null;
+
     return {
       symbol: symbol.toUpperCase(),
       company_name: fundamentals.Name || 'Unknown',
@@ -117,7 +129,10 @@ export class AlphaVantageDataFetcher {
       book_value_per_share: safeParse(fundamentals.BookValue),
       market_cap: safeParse(fundamentals.MarketCapitalization),
       fifty_two_week_high: safeParse(fundamentals['52WeekHigh']),
-      fifty_two_week_low: safeParse(fundamentals['52WeekLow'])
+      fifty_two_week_low: safeParse(fundamentals['52WeekLow']),
+      profit_margin: profitMarginPercent,
+      earnings_growth: earningsGrowthPercent,
+      revenue_growth: revenueGrowthPercent
     };
   }
 }

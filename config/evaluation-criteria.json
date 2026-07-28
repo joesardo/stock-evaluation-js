@@ -1,57 +1,57 @@
 {
   "pe_ratio": {
-    "weight": 0.2,
+    "weight": 0.15,
     "description": "Price-to-Earnings Ratio",
     "inverseScore": true,
     "thresholds": {
       "excellent": 15,
-      "good": 20,
-      "fair": 30,
-      "poor": 30
+      "good": 25,
+      "fair": 40,
+      "poor": 60
     }
   },
   "pb_ratio": {
-    "weight": 0.15,
+    "weight": 0.1,
     "description": "Price-to-Book Ratio",
     "inverseScore": true,
     "thresholds": {
       "excellent": 1.5,
-      "good": 2.5,
-      "fair": 4.0,
-      "poor": 4.0
+      "good": 3.0,
+      "fair": 5.0,
+      "poor": 8.0
     }
   },
   "dividend_yield": {
-    "weight": 0.15,
+    "weight": 0.1,
     "description": "Dividend Yield (%)",
     "inverseScore": false,
     "thresholds": {
-      "excellent": 3.0,
-      "good": 2.0,
+      "excellent": 4.0,
+      "good": 2.5,
       "fair": 1.0,
-      "poor": 0.5
+      "poor": 0.0
     }
   },
   "debt_to_equity": {
-    "weight": 0.2,
+    "weight": 0.15,
     "description": "Debt-to-Equity Ratio",
     "inverseScore": true,
     "thresholds": {
       "excellent": 0.5,
       "good": 1.0,
       "fair": 1.5,
-      "poor": 2.0
+      "poor": 2.5
     }
   },
   "current_ratio": {
-    "weight": 0.15,
+    "weight": 0.1,
     "description": "Current Ratio (Liquidity)",
     "inverseScore": false,
     "thresholds": {
       "excellent": 2.0,
       "good": 1.5,
       "fair": 1.0,
-      "poor": 0.8
+      "poor": 0.5
     }
   },
   "roe": {
@@ -59,10 +59,44 @@
     "description": "Return on Equity (%)",
     "inverseScore": false,
     "thresholds": {
-      "excellent": 20,
+      "excellent": 25,
       "good": 15,
-      "fair": 10,
-      "poor": 5
+      "fair": 8,
+      "poor": 0
+    }
+  },
+  "profit_margin": {
+    "weight": 0.1,
+    "description": "Profit Margin (%)",
+    "inverseScore": false,
+    "thresholds": {
+      "excellent": 20,
+      "good": 10,
+      "fair": 5,
+      "poor": 0
+    }
+  },
+  "earnings_growth": {
+    "weight": 0.1,
+    "description": "Earnings Growth YoY (%)",
+    "inverseScore": false,
+    "thresholds": {
+      "excellent": 20,
+      "good": 10,
+      "fair": 0,
+      "poor": -10
+    }
+  },
+  "revenue_growth": {
+    "weight": 0.05,
+    "description": "Revenue Growth YoY (%)",
+    "inverseScore": false,
+    "thresholds": {
+      "excellent": 15,
+      "good": 8,
+      "fair": 0,
+      "poor": -5
     }
   }
 }
+

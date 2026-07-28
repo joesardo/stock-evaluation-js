@@ -3,7 +3,7 @@ import { EvaluationCriteria, MetricScore, StockData } from './types';
 export class Calculator {
   /**
    * Score a single metric value against evaluation thresholds
-   * Returns a score from 0 to 5
+   * Returns a score from 0 to 5 with smooth interpolation
    */
   static scoreMetric(
     value: number | null,
@@ -15,17 +15,31 @@ export class Calculator {
     }
 
     if (inverseScore) {
-      // For metrics where lower is better (P/E, P/B, etc.)
+      // For metrics where lower is better (P/E, P/B, D/E, etc.)
       if (value <= thresholds.excellent) return 5;
-      if (value <= thresholds.good) return 4;
-      if (value <= thresholds.fair) return 2.5;
-      return 0;
+      if (value <= thresholds.good) {
+        // Smooth interpolation between good and excellent
+        return 4 + ((thresholds.good - value) / (thresholds.good - thresholds.excellent));
+      }
+      if (value <= thresholds.fair) {
+        // Smooth interpolation between fair and good
+        return 2 + ((thresholds.fair - value) / (thresholds.fair - thresholds.good)) * 2;
+      }
+      // Below fair threshold, score decreases gradually
+      return Math.max(0, 2 - ((value - thresholds.fair) / thresholds.fair));
     } else {
-      // For metrics where higher is better (ROE, dividend yield, etc.)
+      // For metrics where higher is better (ROE, dividend yield, current ratio, etc.)
       if (value >= thresholds.excellent) return 5;
-      if (value >= thresholds.good) return 4;
-      if (value >= thresholds.fair) return 2.5;
-      return 0;
+      if (value >= thresholds.good) {
+        // Smooth interpolation between good and excellent
+        return 4 + ((value - thresholds.good) / (thresholds.excellent - thresholds.good));
+      }
+      if (value >= thresholds.fair) {
+        // Smooth interpolation between fair and good
+        return 2 + ((value - thresholds.fair) / (thresholds.good - thresholds.fair)) * 2;
+      }
+      // Below fair threshold, score decreases gradually
+      return Math.max(0, 2 * (value / thresholds.fair));
     }
   }
 
