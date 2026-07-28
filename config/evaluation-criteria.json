@@ -1,0 +1,68 @@
+{
+  "pe_ratio": {
+    "weight": 0.2,
+    "description": "Price-to-Earnings Ratio",
+    "inverseScore": true,
+    "thresholds": {
+      "excellent": 15,
+      "good": 20,
+      "fair": 30,
+      "poor": 30
+    }
+  },
+  "pb_ratio": {
+    "weight": 0.15,
+    "description": "Price-to-Book Ratio",
+    "inverseScore": true,
+    "thresholds": {
+      "excellent": 1.5,
+      "good": 2.5,
+      "fair": 4.0,
+      "poor": 4.0
+    }
+  },
+  "dividend_yield": {
+    "weight": 0.15,
+    "description": "Dividend Yield (%)",
+    "inverseScore": false,
+    "thresholds": {
+      "excellent": 3.0,
+      "good": 2.0,
+      "fair": 1.0,
+      "poor": 0.5
+    }
+  },
+  "debt_to_equity": {
+    "weight": 0.2,
+    "description": "Debt-to-Equity Ratio",
+    "inverseScore": true,
+    "thresholds": {
+      "excellent": 0.5,
+      "good": 1.0,
+      "fair": 1.5,
+      "poor": 2.0
+    }
+  },
+  "current_ratio": {
+    "weight": 0.15,
+    "description": "Current Ratio (Liquidity)",
+    "inverseScore": false,
+    "thresholds": {
+      "excellent": 2.0,
+      "good": 1.5,
+      "fair": 1.0,
+      "poor": 0.8
+    }
+  },
+  "roe": {
+    "weight": 0.15,
+    "description": "Return on Equity (%)",
+    "inverseScore": false,
+    "thresholds": {
+      "excellent": 20,
+      "good": 15,
+      "fair": 10,
+      "poor": 5
+    }
+  }
+}

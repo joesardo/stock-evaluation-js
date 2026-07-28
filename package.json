@@ -1,0 +1,32 @@
+{
+  "name": "stock-evaluation",
+  "version": "1.0.0",
+  "description": "Lightweight stock evaluation tool using public financial metrics",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "evaluate": "ts-node src/index.ts",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "stock",
+    "evaluation",
+    "scoring",
+    "investment",
+    "finance"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.2.0",
+    "ts-node": "^10.9.1"
+  }
+}
