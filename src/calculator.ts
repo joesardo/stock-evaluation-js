@@ -4,6 +4,7 @@ export class Calculator {
   /**
    * Score a single metric value against evaluation thresholds
    * Returns a score from 0 to 5 with smooth interpolation
+   * Handles extreme values gracefully with logarithmic scaling
    */
   static scoreMetric(
     value: number | null,
@@ -25,11 +26,20 @@ export class Calculator {
         // Smooth interpolation between fair and good
         return 2 + ((thresholds.fair - value) / (thresholds.fair - thresholds.good)) * 2;
       }
-      // Below fair threshold, score decreases gradually
-      return Math.max(0, 2 - ((value - thresholds.fair) / thresholds.fair));
+      if (value <= thresholds.poor) {
+        // Smooth interpolation between poor and fair
+        return 0.5 + ((thresholds.poor - value) / (thresholds.poor - thresholds.fair)) * 1.5;
+      }
+      // Beyond poor - use logarithmic decay to avoid hard 0
+      const excess = value / thresholds.poor;
+      return Math.max(0, 0.5 / Math.log10(excess + 2));
     } else {
       // For metrics where higher is better (ROE, dividend yield, current ratio, etc.)
-      if (value >= thresholds.excellent) return 5;
+      if (value >= thresholds.excellent) {
+        // For values well above excellent, use logarithmic scaling
+        const ratio = value / thresholds.excellent;
+        return Math.min(5, 5 + Math.log10(ratio) * 0.5);
+      }
       if (value >= thresholds.good) {
         // Smooth interpolation between good and excellent
         return 4 + ((value - thresholds.good) / (thresholds.excellent - thresholds.good));

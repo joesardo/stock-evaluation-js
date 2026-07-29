@@ -15,10 +15,10 @@
     "description": "Price-to-Book Ratio",
     "inverseScore": true,
     "thresholds": {
-      "excellent": 1.5,
-      "good": 3.0,
-      "fair": 5.0,
-      "poor": 8.0
+      "excellent": 2.0,
+      "good": 5.0,
+      "fair": 10.0,
+      "poor": 20.0
     }
   },
   "dividend_yield": {
@@ -38,9 +38,9 @@
     "inverseScore": true,
     "thresholds": {
       "excellent": 0.5,
-      "good": 1.0,
-      "fair": 1.5,
-      "poor": 2.5
+      "good": 1.5,
+      "fair": 3.0,
+      "poor": 5.0
     }
   },
   "current_ratio": {
@@ -59,7 +59,7 @@
     "description": "Return on Equity (%)",
     "inverseScore": false,
     "thresholds": {
-      "excellent": 25,
+      "excellent": 20,
       "good": 15,
       "fair": 8,
       "poor": 0
@@ -70,7 +70,7 @@
     "description": "Profit Margin (%)",
     "inverseScore": false,
     "thresholds": {
-      "excellent": 20,
+      "excellent": 15,
       "good": 10,
       "fair": 5,
       "poor": 0
@@ -83,7 +83,7 @@
     "thresholds": {
       "excellent": 20,
       "good": 10,
-      "fair": 0,
+      "fair": 5,
       "poor": -10
     }
   },
@@ -92,9 +92,9 @@
     "description": "Revenue Growth YoY (%)",
     "inverseScore": false,
     "thresholds": {
-      "excellent": 15,
-      "good": 8,
-      "fair": 0,
+      "excellent": 20,
+      "good": 12,
+      "fair": 5,
       "poor": -5
     }
   },
