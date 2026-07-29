@@ -151,7 +151,15 @@ export class AlphaVantageDataFetcher {
     const revenueGrowth = safeParse(fundamentals.QuarterlyRevenueGrowthYOY);
     const revenueGrowthPercent = revenueGrowth ? revenueGrowth * 100 : null;
 
-    return {
+    // Calculate price position: where price sits in 52-week range (0-100%)
+    // 0% = at 52-week low (undervalued)
+    // 100% = at 52-week high (overvalued)
+    const low = safeParse(fundamentals['52WeekLow']);
+    const high = safeParse(fundamentals['52WeekHigh']);
+    let pricePosition: number | null = null;
+    if (low && high && low !== high) {
+      pricePosition = ((currentPrice - low) / (high - low)) * 100;
+    }
       symbol: symbol.toUpperCase(),
       company_name: fundamentals.Name || 'Unknown',
       price: currentPrice,
@@ -168,7 +176,8 @@ export class AlphaVantageDataFetcher {
       fifty_two_week_low: safeParse(fundamentals['52WeekLow']),
       profit_margin: profitMarginPercent,
       earnings_growth: earningsGrowthPercent,
-      revenue_growth: revenueGrowthPercent
+      revenue_growth: revenueGrowthPercent,
+      price_position: pricePosition
     };
   }
 }

@@ -97,6 +97,17 @@
       "fair": 0,
       "poor": -5
     }
+  },
+  "price_position": {
+    "weight": 0.1,
+    "description": "Price Position in 52-Week Range (%)",
+    "inverseScore": true,
+    "thresholds": {
+      "excellent": 25,
+      "good": 40,
+      "fair": 60,
+      "poor": 80
+    }
   }
 }
 

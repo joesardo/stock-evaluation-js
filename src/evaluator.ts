@@ -167,6 +167,23 @@ export class Evaluator {
       });
     }
 
+    // Evaluate Price Position (52-week range)
+    if (stock.price_position !== null && this.criteria.price_position) {
+      const score = Calculator.scoreMetric(
+        stock.price_position,
+        this.criteria.price_position.thresholds,
+        this.criteria.price_position.inverseScore || false
+      );
+      metrics.push({
+        name: 'Price Position',
+        description: this.criteria.price_position.description,
+        value: stock.price_position,
+        score,
+        weight: this.criteria.price_position.weight,
+        max_score: score * this.criteria.price_position.weight
+      });
+    }
+
     // Calculate overall score
     const overall_score = Calculator.calculateWeightedScore(metrics);
     const recommendation = Calculator.getRecommendation(overall_score);

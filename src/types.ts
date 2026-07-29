@@ -16,6 +16,7 @@ export interface StockData {
   profit_margin: number | null;
   earnings_growth: number | null;
   revenue_growth: number | null;
+  price_position: number | null;
 }
 
 export interface MetricScore {
