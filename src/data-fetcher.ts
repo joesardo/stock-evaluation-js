@@ -6,30 +6,38 @@ dotenv.config();
 
 export class DataFetcher {
   /**
-   * Fetch stock data from Alpha Vantage API
+   * Fetch stock data - tries yfinance first, falls back to Alpha Vantage
    */
   static async fetchStockData(symbol: string): Promise<StockData> {
-    const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
-
-    if (!apiKey || apiKey === 'demo') {
-      throw new Error(
-        'ALPHA_VANTAGE_API_KEY not configured. Please add your API key to .env file. ' +
-        'Get a free key at https://www.alphavantage.co/'
-      );
-    }
-
+    // Try yfinance first (no API key, no rate limits)
     try {
-      const fetcher = new AlphaVantageDataFetcher(apiKey);
-      const fundamentals = await fetcher.fetchFundamentals(symbol);
+      console.log(`  → Fetching from yfinance...`);
+      const yfinanceFetcher = new YFinanceDataFetcher();
+      return await yfinanceFetcher.fetchStockData(symbol);
+    } catch (yfinanceError) {
+      console.log(`  ⚠️  yfinance failed: ${yfinanceError instanceof Error ? yfinanceError.message : String(yfinanceError)}`);
       
-      // Try to fetch real-time price, but don't block if it fails (API rate limits)
-      const latestPrice = await fetcher.fetchLatestPrice(symbol).catch(() => 0);
-      
-      return await fetcher.parseStockData(symbol, fundamentals, latestPrice);
-    } catch (error) {
-      throw new Error(
-        `Failed to fetch data for ${symbol}: ${error instanceof Error ? error.message : String(error)}`
-      );
+      // Fall back to Alpha Vantage
+      const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+      if (!apiKey || apiKey === 'demo') {
+        throw new Error(
+          'Both data sources failed. yfinance error, and ALPHA_VANTAGE_API_KEY not configured. ' +
+          'Please add your Alpha Vantage API key to .env file (get free key at https://www.alphavantage.co/)'
+        );
+      }
+
+      try {
+        console.log(`  → Falling back to Alpha Vantage...`);
+        const fetcher = new AlphaVantageDataFetcher(apiKey);
+        const fundamentals = await fetcher.fetchFundamentals(symbol);
+        const latestPrice = await fetcher.fetchLatestPrice(symbol).catch(() => 0);
+        return await fetcher.parseStockData(symbol, fundamentals, latestPrice);
+      } catch (alphaError) {
+        throw new Error(
+          `Failed with both data sources - yfinance: ${yfinanceError instanceof Error ? yfinanceError.message : String(yfinanceError)}, ` +
+          `Alpha Vantage: ${alphaError instanceof Error ? alphaError.message : String(alphaError)}`
+        );
+      }
     }
   }
 
@@ -176,6 +184,121 @@ export class AlphaVantageDataFetcher {
       market_cap: safeParse(fundamentals.MarketCapitalization),
       fifty_two_week_high: safeParse(fundamentals['52WeekHigh']),
       fifty_two_week_low: safeParse(fundamentals['52WeekLow']),
+      profit_margin: profitMarginPercent,
+      earnings_growth: earningsGrowthPercent,
+      revenue_growth: revenueGrowthPercent,
+      price_position: pricePosition
+    };
+  }
+}
+
+/**
+ * YFinance data fetcher using yahoo-finance2
+ * Primary data source - no API key required, unlimited requests
+ */
+export class YFinanceDataFetcher {
+  async fetchStockData(symbol: string): Promise<StockData> {
+    try {
+      // Import yahoo-finance2 - v11+ requires instantiation
+      const YahooFinance = require('yahoo-finance2').default;
+      const yf = new YahooFinance({ suppressNotices: ['yahooSurvey'] });
+      
+      // Fetch quote data (price, 52-week range, etc.)
+      const quote = await yf.quote(symbol);
+      
+      // Fetch summary data for fundamentals
+      const modules = [
+        'price',
+        'summaryDetail',
+        'financialData',
+        'defaultKeyStatistics'
+      ];
+      const result = await yf.quoteSummary(symbol, { modules });
+      
+      return this.parseStockData(symbol, quote, result);
+    } catch (error) {
+      throw new Error(
+        `Failed to fetch data from yfinance for ${symbol}: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  private parseStockData(symbol: string, quote: any, summary: any): StockData {
+    const safeParse = (value: any): number | null => {
+      if (value === undefined || value === null || value === 'None' || value === '') return null;
+      const parsed = parseFloat(value);
+      return isNaN(parsed) ? null : parsed;
+    };
+
+    // Current price
+    const currentPrice = safeParse(quote.regularMarketPrice);
+
+    // P/E ratio
+    const peRatio = safeParse(quote.trailingPE) || safeParse(summary?.financialData?.trailingPE);
+
+    // P/B ratio  
+    const pbRatio = safeParse(summary?.defaultKeyStatistics?.priceToBook);
+
+    // Dividend yield (comes as decimal)
+    const dividendYield = safeParse(summary?.summaryDetail?.dividendYield);
+    const dividendYieldPercent = dividendYield ? dividendYield * 100 : 0;
+
+    // ROE (comes as decimal)
+    const roe = safeParse(summary?.financialData?.returnOnEquity);
+    const roePercent = roe ? roe * 100 : 0;
+
+    // Debt to Equity
+    const debtToEquity = safeParse(summary?.financialData?.debtToEquity);
+
+    // Current ratio
+    const currentRatio = safeParse(summary?.financialData?.currentRatio);
+
+    // EPS
+    const eps = safeParse(quote.epsTrailingTwelveMonths);
+
+    // Book value per share
+    const bookValue = safeParse(summary?.defaultKeyStatistics?.bookValue);
+
+    // Market cap
+    const marketCap = safeParse(quote.marketCap);
+
+    // 52-week range
+    const fiftyTwoWeekHigh = safeParse(quote.fiftyTwoWeekHigh);
+    const fiftyTwoWeekLow = safeParse(quote.fiftyTwoWeekLow);
+
+    // Profit margin (comes as decimal)
+    const profitMargin = safeParse(summary?.financialData?.profitMargins);
+    const profitMarginPercent = profitMargin ? profitMargin * 100 : null;
+
+    // Earnings growth YoY (comes as decimal)
+    const earningsGrowth = safeParse(summary?.financialData?.earningsGrowth);
+    const earningsGrowthPercent = earningsGrowth ? earningsGrowth * 100 : null;
+
+    // Revenue growth YoY (comes as decimal)
+    const revenueGrowth = safeParse(summary?.financialData?.revenueGrowth);
+    const revenueGrowthPercent = revenueGrowth ? revenueGrowth * 100 : null;
+
+    // Price position in 52-week range
+    let pricePosition: number | null = null;
+    if (fiftyTwoWeekLow && fiftyTwoWeekHigh && fiftyTwoWeekLow !== fiftyTwoWeekHigh && currentPrice) {
+      pricePosition = ((currentPrice - fiftyTwoWeekLow) / (fiftyTwoWeekHigh - fiftyTwoWeekLow)) * 100;
+    }
+
+    return {
+      symbol: symbol.toUpperCase(),
+      company_name: quote.longName || quote.shortName || 'Unknown',
+      price: currentPrice || 0,
+      pe_ratio: peRatio,
+      pb_ratio: pbRatio,
+      dividend_yield: dividendYieldPercent,
+      debt_to_equity: debtToEquity,
+      current_ratio: currentRatio,
+      roe: roePercent,
+      earnings_per_share: eps,
+      book_value_per_share: bookValue,
+      market_cap: marketCap,
+      fifty_two_week_high: fiftyTwoWeekHigh,
+      fifty_two_week_low: fiftyTwoWeekLow,
       profit_margin: profitMarginPercent,
       earnings_growth: earningsGrowthPercent,
       revenue_growth: revenueGrowthPercent,
