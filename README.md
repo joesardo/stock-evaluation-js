@@ -4,7 +4,10 @@ A lightweight, free stock evaluation script for analyzing publicly traded compan
 
 ## Features
 
-- **Free Data Sources**: Uses publicly available financial data (no paid subscriptions)
+- **Free Data Sources**: Uses yfinance (Yahoo Finance) - no API key required, unlimited requests
+- **Backup API**: Alpha Vantage fallback for resilience (25 requests/day free tier)
+- **Sector Screening**: Evaluate all stocks in a sector at once (tech, finance, healthcare, etc.)
+- **Top Stocks Finder**: Batch evaluate 100+ stocks across all sectors to find top performers
 - **Multi-factor Analysis**: Evaluates stocks based on:
   - Price-to-Earnings (P/E) Ratio
   - Price-to-Book (P/B) Ratio
@@ -12,10 +15,14 @@ A lightweight, free stock evaluation script for analyzing publicly traded compan
   - Debt-to-Equity Ratio
   - Current Ratio (Liquidity)
   - ROE (Return on Equity)
-  - Industry benchmarks
+  - Profit Margin
+  - Earnings Growth YoY
+  - Revenue Growth YoY
+  - Price Position in 52-Week Range
   
 - **Customizable Scoring**: Configure weights and thresholds for your investment criteria
 - **CLI Interface**: Simple command-line tool to quickly evaluate any stock
+- **Ranked Results**: View sector/top results sorted by score with visual bars
 - **Clear Output**: Get a comprehensive score with breakdown of each metric
 
 ## Installation
@@ -31,14 +38,59 @@ npm install
 
 ## Usage
 
-### Run with a ticker symbol
+### Evaluate individual stocks
 
 ```bash
 npm run dev -- AAPL
 npm run dev -- MSFT GOOGL TSLA
 ```
 
-### Evaluate with custom configuration
+### Screen by sector
+
+Evaluate all stocks in a specific sector and get ranked results:
+
+```bash
+npm run dev -- --sector technology
+npm run dev -- --sector financials
+npm run dev -- --sector healthcare
+```
+
+Available sectors: technology, financials, healthcare, industrials, consumer, energy, telecom, utilities, realestate, materials
+
+### Find top performers
+
+Batch evaluate 100+ stocks across all sectors to find the top N performers:
+
+```bash
+npm run dev -- --top 10
+npm run dev -- --top 20
+```
+
+### Example: Technology Sector Results
+
+```
+🎯 Evaluating Technology sector (15 stocks)
+
+[Detailed evaluation for each stock...]
+
+════════════════════════════════════════════════════════════════════════════════
+📊 SUMMARY - Ranked by Score
+════════════════════════════════════════════════════════════════════════════════
+
+1   QCOM   ████████░░ 76/100  BUY
+2   META   ████████░░ 75/100  BUY
+3   MSFT   ███████░░░ 73/100  BUY
+4   GOOGL  ███████░░░ 70/100  BUY
+5   NVDA   ███████░░░ 67/100  BUY
+...
+
+📈 Breakdown: 9 BUY | 4 HOLD | 2 SELL (out of 15 evaluated)
+
+💡 Highest: QCOM (76/100)
+   Lowest:  INTC (34/100)
+```
+
+### Customize evaluation criteria
 
 Edit `config/evaluation-criteria.json` to adjust weights and thresholds for your needs.
 
@@ -84,13 +136,18 @@ The evaluation criteria are defined in `config/evaluation-criteria.json`. Each m
 
 ## Data Sources
 
-Currently supports fetching from:
-- [Alpha Vantage Free API](https://www.alphavantage.co/) - Stock prices and basic fundamentals
-- [Free Yahoo Finance Data](https://finance.yahoo.com/) - Historical and current data
-- IEX Cloud Free Tier (future)
-- Financial Modeling Prep Free API (future)
+**Primary**: [yfinance (Yahoo Finance)](https://finance.yahoo.com/)
+- No API key required
+- Unlimited requests (no rate limits)
+- Real-time quotes and fundamentals
+- 52-week price ranges
 
-**Note**: Free APIs have rate limits. See individual API documentation for details.
+**Fallback**: [Alpha Vantage Free API](https://www.alphavantage.co/)
+- Used if yfinance fails
+- Free tier: 25 requests/day
+- Stock prices and basic fundamentals
+
+The tool automatically tries yfinance first, then falls back to Alpha Vantage if needed.
 
 ## Example Output
 
@@ -121,19 +178,36 @@ Recommendation: BUY ✓
 ```
 stock-evaluation-js/
 ├── src/
-│   ├── index.ts              # CLI entry point
+│   ├── index.ts              # CLI entry point (handles --sector, --top flags)
 │   ├── evaluator.ts          # Core scoring engine
-│   ├── data-fetcher.ts       # API data retrieval
+│   ├── data-fetcher.ts       # yfinance + Alpha Vantage data retrieval
 │   ├── calculator.ts         # Financial metric calculations
 │   └── types.ts              # TypeScript interfaces
 ├── config/
-│   └── evaluation-criteria.json # Scoring configuration
+│   ├── evaluation-criteria.json  # Scoring configuration
+│   └── watchlists.json          # Sector-based stock watchlists
 ├── dist/                     # Compiled JavaScript (generated)
 ├── package.json
 ├── tsconfig.json
-├── .env.example              # Environment variables template
+├── .env.example              # Environment variables template (Alpha Vantage key)
 └── README.md
 ```
+
+## Watchlists
+
+Sector watchlists are defined in `config/watchlists.json` and include 150+ stocks across 10 sectors:
+- **Technology**: AAPL, MSFT, GOOGL, META, NVDA, TSLA, etc.
+- **Financials**: JPM, BAC, WFC, GS, MS, BLK, etc.
+- **Healthcare**: JNJ, UNH, LLY, PFE, AZN, etc.
+- **Industrials**: BA, GE, MMM, HON, CAT, etc.
+- **Consumer**: AMZN, WMT, MCD, NKE, SBUX, etc.
+- **Energy**: XOM, CVX, COP, MPC, PSX, etc.
+- **Telecom**: VZ, T, TMUS, CHTR, CMCSA, etc.
+- **Utilities**: NEE, DUK, SO, AEP, ES, etc.
+- **Real Estate**: SPG, PLD, AWO, EXR, PSA, etc.
+- **Materials**: NEM, FCX, AA, SCCO, TX, etc.
+
+Add or customize watchlists by editing `config/watchlists.json`.
 
 ## Development
 
@@ -172,12 +246,14 @@ Feel free to submit issues or PRs to:
 ## Future Enhancements
 
 - [ ] Technical indicator analysis (MA, RSI, MACD)
-- [ ] Sector/industry comparison
-- [ ] Portfolio analysis across multiple stocks
+- [ ] Comparative analysis within sectors
+- [ ] Portfolio analysis and optimization
 - [ ] Backtesting historical recommendations
 - [ ] Database caching to reduce API calls
 - [ ] Web dashboard for visualization
-- [ ] Machine learning for pattern recognition (using free models)
+- [ ] Custom watchlist support
+- [ ] Save/load evaluation results
+- [ ] Export to CSV/JSON
 
 ## License
 
