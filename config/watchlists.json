@@ -3,40 +3,144 @@
     "name": "Technology",
     "symbols": ["AAPL", "MSFT", "GOOGL", "META", "NVDA", "TSLA", "AMZN", "NFLX", "AVGO", "QCOM", "INTC", "AMD", "MSTR", "CRM", "ADBE"]
   },
+  "semiconductors": {
+    "name": "Semiconductors & Chip Manufacturing",
+    "symbols": ["NVDA", "AMD", "INTC", "QCOM", "AVGO", "ASML", "TSM", "MCHP", "SWKS", "MU", "NXPI", "LRCX", "AMAT", "KLAC", "SNPS"]
+  },
+  "cloud_software": {
+    "name": "Cloud & Software",
+    "symbols": ["MSFT", "GOOGL", "CRM", "ADBE", "SNOW", "CRWD", "NET", "DDOG", "OKTA", "SHOP", "NTNX", "SPLK", "WDAY", "VEEV", "DBX"]
+  },
+  "ai_ml": {
+    "name": "AI & Machine Learning",
+    "symbols": ["NVDA", "MSFT", "GOOGL", "META", "TSLA", "ARM", "SMCI", "SUPER", "MDB", "PLTR", "AI", "UPST", "CRM", "RBLX", "U"]
+  },
   "financials": {
-    "name": "Financials",
+    "name": "Financials & Banking",
     "symbols": ["JPM", "BAC", "WFC", "GS", "MS", "BLK", "AXP", "COF", "USB", "PNC", "TD", "CM", "RY", "BNS", "BMO"]
   },
   "healthcare": {
-    "name": "Healthcare",
+    "name": "Healthcare & Pharma",
     "symbols": ["JNJ", "UNH", "LLY", "PFE", "AZN", "ABBV", "TMO", "AMGN", "GILD", "MRNA", "REGN", "VRTX", "EXAS", "ILMN", "DXCM"]
+  },
+  "biotech": {
+    "name": "Biotech",
+    "symbols": ["MRNA", "REGN", "VRTX", "CRSP", "BEAM", "XENE", "BNTX", "IOVA", "RETA", "SGFY", "SGEN", "ALNX", "ARQT", "CDTX", "ONCT"]
   },
   "industrials": {
     "name": "Industrials",
     "symbols": ["BA", "GE", "MMM", "HON", "CAT", "RTX", "LMT", "NOC", "ITT", "CARR", "OTIS", "EMR", "ETN", "ROK", "WM"]
   },
-  "consumer": {
+  "defense_aerospace": {
+    "name": "Defense & Aerospace",
+    "symbols": ["BA", "RTX", "LMT", "NOC", "GD", "LDOS", "HII", "AXON", "MOD", "KTOS", "SAIC", "VSAT", "RKLB", "RMTI", "SSSS"]
+  },
+  "airlines": {
+    "name": "Airlines & Travel",
+    "symbols": ["DAL", "UAL", "AAL", "ALK", "SKYW", "JBLU", "ULCC", "SAVE", "PENN", "LVS", "WYNN", "MGM", "DIS", "EXPE", "ABNB"]
+  },
+  "automotive": {
+    "name": "Automotive",
+    "symbols": ["TSLA", "F", "GM", "TM", "HMC", "VWAGY", "BYDDY", "LI", "NIO", "XPEV", "HYAC", "LCID", "RIVN", "POLEQ", "PAG"]
+  },
+  "ev_electric": {
+    "name": "Electric Vehicles",
+    "symbols": ["TSLA", "LI", "NIO", "XPEV", "RIVN", "LCID", "HYAC", "PAG", "BYDDY", "BLNK", "CHPT", "EVGO", "EVTL", "PLUG", "FCEL"]
+  },
+  "consumer_discretionary": {
     "name": "Consumer Discretionary",
-    "symbols": ["AMZN", "WMT", "MCD", "TSLA", "NKE", "SBUX", "MKS", "HD", "DIS", "LOW", "TJX", "ABNB", "PTON", "DASH", "EXPE"]
+    "symbols": ["AMZN", "TSLA", "MCD", "NKE", "SBUX", "HD", "DIS", "LOW", "TJX", "ABNB", "PTON", "DASH", "EXPE", "BOOKING", "MAR"]
+  },
+  "retail": {
+    "name": "Retail & E-Commerce",
+    "symbols": ["AMZN", "WMT", "COST", "TJX", "HD", "LOW", "AZO", "BBY", "DKS", "RH", "FIVE", "PRCT", "SMRT", "KSS", "DLTR"]
+  },
+  "consumer_staples": {
+    "name": "Consumer Staples",
+    "symbols": ["WMT", "KO", "PEP", "MO", "PM", "BTI", "SAB", "CL", "GIS", "K", "CPB", "EL", "HSY", "MDLZ", "CHD"]
   },
   "energy": {
-    "name": "Energy",
+    "name": "Energy & Oil & Gas",
     "symbols": ["XOM", "CVX", "COP", "MPC", "PSX", "VLO", "OKE", "KMI", "LNG", "SLB", "HAL", "EOG", "MRO", "CIVI", "AR"]
+  },
+  "renewables": {
+    "name": "Clean Energy & Renewables",
+    "symbols": ["NEE", "ICLN", "TAN", "PLUG", "FCEL", "ENPH", "RUN", "SEDG", "AYZ", "ADANIGREEN.BO", "SUZLON.BO", "INOX", "WINDX", "RECL", "RELUINFRA"]
   },
   "telecom": {
     "name": "Telecommunications",
-    "symbols": ["VZ", "T", "TMUS", "CHTR", "CMCSA", "DISH", "LUMN", "SPGI", "MCK", "UPS", "FDX", "XYL", "SMCI", "MRVL", "ORCL"]
+    "symbols": ["VZ", "T", "TMUS", "CHTR", "CMCSA", "DISH", "LUMN", "VIV", "TELEFONICA", "DT", "ORAN", "SWX", "AKAM", "TEAM", "ANET"]
   },
   "utilities": {
     "name": "Utilities",
     "symbols": ["NEE", "DUK", "SO", "AEP", "ES", "EXC", "PEG", "SRE", "CMS", "WEC", "XEL", "PPL", "EVRG", "AWK", "NRG"]
   },
   "realestate": {
-    "name": "Real Estate",
+    "name": "Real Estate & REITs",
     "symbols": ["SPG", "PLD", "AWO", "EXR", "PSA", "WELL", "AVB", "EQR", "MAA", "UMH", "CUBE", "REXR", "LSI", "POR", "IRM"]
   },
   "materials": {
-    "name": "Materials",
+    "name": "Materials & Mining",
     "symbols": ["NEM", "FCX", "AA", "SCCO", "TX", "VALE", "RIO", "TECK", "ALB", "LPX", "WRK", "MOS", "AGI", "CRS", "AMPL"]
+  },
+  "china": {
+    "name": "China Stocks (ADRs)",
+    "symbols": ["BABA", "TCEHY", "NIO", "XPEV", "LI", "JD", "BILBY", "BGRY", "FUTU", "DIDI", "PDD", "VIPS", "IQ", "BYDDY", "SFTBY"]
+  },
+  "india": {
+    "name": "India Stocks (ADRs)",
+    "symbols": ["INFY", "WIT", "TCS", "HDFCB", "IBN", "RDWR", "HDB", "ASIANPAINT", "MARUTI", "BAJAJFINSV", "ASIANPAINTM", "COALINDIA", "BHARTIARTL", "ADANIPORTS", "ICICIBANK"]
+  },
+  "growth": {
+    "name": "Growth Stocks",
+    "symbols": ["TSLA", "NVDA", "META", "NFLX", "MSFT", "GOOGL", "AMD", "ENPH", "NIO", "RBLX", "SHOP", "SNOW", "CRM", "ADBE", "CRWD"]
+  },
+  "value": {
+    "name": "Value Stocks",
+    "symbols": ["JPM", "BAC", "XOM", "CVX", "JNJ", "KO", "PEP", "WMT", "PG", "JNJ", "PFE", "INTC", "F", "GM", "T"]
+  },
+  "dividend": {
+    "name": "High Dividend Yield",
+    "symbols": ["VZ", "T", "MO", "PM", "BTI", "SAB", "KO", "PEP", "JNJ", "PG", "OKE", "KMI", "PLD", "SPG", "WELL"]
+  },
+  "penny_stocks": {
+    "name": "Speculative/Micro Cap",
+    "symbols": ["SENS", "PROG", "OCGN", "CLVS", "BNGO", "SNDL", "MSOS", "NKLA", "WISH", "PLBY", "SOFI", "COIN", "MULN", "GOEV", "DKNG"]
+  },
+  "streaming_media": {
+    "name": "Streaming & Media",
+    "symbols": ["NFLX", "DIS", "CMCSA", "PARA", "CHTR", "ROKU", "FUBO", "VIACOMCBS", "IMAX", "MSG", "LSXMA", "LSXMK", "ATVI", "RBLX", "SE"]
+  },
+  "entertainment": {
+    "name": "Entertainment & Gaming",
+    "symbols": ["DIS", "NFLX", "RBLX", "ATVI", "TTWO", "TAKE", "ZNGA", "DKNG", "PENN", "MGM", "LVS", "WYNN", "GNOG", "RNXT", "INTC"]
+  },
+  "metaverse": {
+    "name": "Metaverse & VR",
+    "symbols": ["META", "RBLX", "NVDA", "MSFT", "GOOG", "U", "MSTR", "COIN", "MARA", "RIOT", "CLSK", "CIFR", "HOOD", "UPST", "SOFI"]
+  },
+  "cryptocurrency_adjacent": {
+    "name": "Cryptocurrency & Blockchain",
+    "symbols": ["COIN", "MSTR", "MARA", "RIOT", "CLSK", "CIFR", "HOOD", "SQ", "PYPL", "GBTC", "IBIT", "FBTC", "PAXG", "SLV", "IAU"]
+  },
+  "fintech": {
+    "name": "Fintech",
+    "symbols": ["SQ", "PYPL", "SOFI", "UPST", "COIN", "HOOD", "PLAID", "AFFIRM", "BILL", "NET", "OKTA", "TTD", "ZETA", "TPG", "CI"]
+  },
+  "logistics": {
+    "name": "Logistics & Shipping",
+    "symbols": ["UPS", "FDX", "XPO", "KNX", "ODFL", "JBHT", "SNDR", "HTLD", "GXO", "ATGE", "LAD", "USF", "ACV", "YRC", "LOGI"]
+  },
+  "insurance": {
+    "name": "Insurance",
+    "symbols": ["BRK.B", "TRV", "ALL", "CB", "AIG", "HIG", "PGR", "AFG", "RLI", "KMPR", "ODD", "KNSL", "PRGO", "PHIIK", "UVE"]
+  },
+  "mega_cap": {
+    "name": "Mega Cap (Top 10 By Market Cap)",
+    "symbols": ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK.B", "JPMX", "V"]
+  },
+  "sp500_tech_heavy": {
+    "name": "S&P 500 Tech-Heavy",
+    "symbols": ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "CRM", "ADBE", "INTC", "AMD", "NFLX", "PYPL", "SQ", "TTD"]
   }
 }
