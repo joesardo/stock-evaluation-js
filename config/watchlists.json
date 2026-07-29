@@ -37,7 +37,7 @@
   },
   "airlines": {
     "name": "Airlines & Travel",
-    "symbols": ["DAL", "UAL", "AAL", "ALK", "SKYW", "JBLU", "ULCC", "SAVE", "PENN", "LVS", "WYNN", "MGM", "DIS", "EXPE", "ABNB"]
+    "symbols": ["DAL", "UAL", "AAL", "ALK", "SKYW", "JBLU", "PENN", "LVS", "WYNN", "MGM", "DIS", "EXPE", "ABNB", "BOOKING", "MAR"]
   },
   "automotive": {
     "name": "Automotive",
@@ -45,7 +45,7 @@
   },
   "ev_electric": {
     "name": "Electric Vehicles",
-    "symbols": ["TSLA", "LI", "NIO", "XPEV", "RIVN", "LCID", "HYAC", "PAG", "BYDDY", "BLNK", "CHPT", "EVGO", "EVTL", "PLUG", "FCEL"]
+    "symbols": ["TSLA", "LI", "NIO", "XPEV", "RIVN", "LCID", "PAG", "BYDDY", "BLNK", "CHPT", "EVGO", "PLUG", "FCEL"]
   },
   "consumer_discretionary": {
     "name": "Consumer Discretionary",
@@ -69,7 +69,7 @@
   },
   "telecom": {
     "name": "Telecommunications",
-    "symbols": ["VZ", "T", "TMUS", "CHTR", "CMCSA", "DISH", "LUMN", "VIV", "TELEFONICA", "DT", "ORAN", "SWX", "AKAM", "TEAM", "ANET"]
+    "symbols": ["VZ", "T", "TMUS", "CHTR", "CMCSA", "DISH", "LUMN", "VIV", "DT", "ORAN", "SWX"]
   },
   "utilities": {
     "name": "Utilities",
@@ -85,7 +85,7 @@
   },
   "china": {
     "name": "China Stocks (ADRs)",
-    "symbols": ["BABA", "TCEHY", "NIO", "XPEV", "LI", "JD", "BILBY", "BGRY", "FUTU", "DIDI", "PDD", "VIPS", "IQ", "BYDDY", "SFTBY"]
+    "symbols": ["BABA", "TCEHY", "NIO", "XPEV", "LI", "JD", "VIPS", "FUTU", "PDD", "SFTBY", "IQ"]
   },
   "india": {
     "name": "India Stocks (ADRs)",
@@ -105,7 +105,7 @@
   },
   "penny_stocks": {
     "name": "Speculative/Micro Cap",
-    "symbols": ["SENS", "PROG", "OCGN", "CLVS", "BNGO", "SNDL", "MSOS", "NKLA", "WISH", "PLBY", "SOFI", "COIN", "MULN", "GOEV", "DKNG"]
+    "symbols": ["SENS", "PROG", "OCGN", "CLVS", "BNGO", "SNDL", "MSOS", "NKLA", "WISH", "PLBY", "SOFI", "COIN", "DKNG"]
   },
   "streaming_media": {
     "name": "Streaming & Media",
