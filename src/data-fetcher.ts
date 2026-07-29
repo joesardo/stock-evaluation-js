@@ -160,6 +160,8 @@ export class AlphaVantageDataFetcher {
     if (low && high && low !== high) {
       pricePosition = ((currentPrice - low) / (high - low)) * 100;
     }
+
+    return {
       symbol: symbol.toUpperCase(),
       company_name: fundamentals.Name || 'Unknown',
       price: currentPrice,
