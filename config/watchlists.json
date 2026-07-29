@@ -1,0 +1,42 @@
+{
+  "technology": {
+    "name": "Technology",
+    "symbols": ["AAPL", "MSFT", "GOOGL", "META", "NVDA", "TSLA", "AMZN", "NFLX", "AVGO", "QCOM", "INTC", "AMD", "MSTR", "CRM", "ADBE"]
+  },
+  "financials": {
+    "name": "Financials",
+    "symbols": ["JPM", "BAC", "WFC", "GS", "MS", "BLK", "AXP", "COF", "USB", "PNC", "TD", "CM", "RY", "BNS", "BMO"]
+  },
+  "healthcare": {
+    "name": "Healthcare",
+    "symbols": ["JNJ", "UNH", "LLY", "PFE", "AZN", "ABBV", "TMO", "AMGN", "GILD", "MRNA", "REGN", "VRTX", "EXAS", "ILMN", "DXCM"]
+  },
+  "industrials": {
+    "name": "Industrials",
+    "symbols": ["BA", "GE", "MMM", "HON", "CAT", "RTX", "LMT", "NOC", "ITT", "CARR", "OTIS", "EMR", "ETN", "ROK", "WM"]
+  },
+  "consumer": {
+    "name": "Consumer Discretionary",
+    "symbols": ["AMZN", "WMT", "MCD", "TSLA", "NKE", "SBUX", "MKS", "HD", "DIS", "LOW", "TJX", "ABNB", "PTON", "DASH", "EXPE"]
+  },
+  "energy": {
+    "name": "Energy",
+    "symbols": ["XOM", "CVX", "COP", "MPC", "PSX", "VLO", "OKE", "KMI", "LNG", "SLB", "HAL", "EOG", "MRO", "CIVI", "AR"]
+  },
+  "telecom": {
+    "name": "Telecommunications",
+    "symbols": ["VZ", "T", "TMUS", "CHTR", "CMCSA", "DISH", "LUMN", "SPGI", "MCK", "UPS", "FDX", "XYL", "SMCI", "MRVL", "ORCL"]
+  },
+  "utilities": {
+    "name": "Utilities",
+    "symbols": ["NEE", "DUK", "SO", "AEP", "ES", "EXC", "PEG", "SRE", "CMS", "WEC", "XEL", "PPL", "EVRG", "AWK", "NRG"]
+  },
+  "realestate": {
+    "name": "Real Estate",
+    "symbols": ["SPG", "PLD", "AWO", "EXR", "PSA", "WELL", "AVB", "EQR", "MAA", "UMH", "CUBE", "REXR", "LSI", "POR", "IRM"]
+  },
+  "materials": {
+    "name": "Materials",
+    "symbols": ["NEM", "FCX", "AA", "SCCO", "TX", "VALE", "RIO", "TECK", "ALB", "LPX", "WRK", "MOS", "AGI", "CRS", "AMPL"]
+  }
+}
