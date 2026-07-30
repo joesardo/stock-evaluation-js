@@ -190,6 +190,7 @@ function showSummary(results: SummaryResult[], topN?: number) {
   console.log('\n' + '═'.repeat(80));
   console.log('📊 SUMMARY - Ranked by Quality & Value');
   console.log('═'.repeat(80));
+  console.log(`\n    F-Score          Value`);
   console.log('');
 
   displayed.forEach((result, index) => {
@@ -197,21 +198,26 @@ function showSummary(results: SummaryResult[], topN?: number) {
     const qualityBar = '█'.repeat(Math.round(qualityFScore)) + '░'.repeat(9 - Math.round(qualityFScore));
     const valueBar = '█'.repeat(Math.round(result.value_score / 10)) + '░'.repeat(10 - Math.round(result.value_score / 10));
     
-    // Quality emoji based on F-Score
-    let qualityEmoji = '🟢';
-    if (qualityFScore < 4) qualityEmoji = '🔴';
-    else if (qualityFScore < 6) qualityEmoji = '🟡';
+    // Quality emoji - more gradual (10 levels for better differentiation)
+    let qualityEmoji = '🔴';
+    if (qualityFScore >= 0.5) qualityEmoji = '🟠';
+    if (qualityFScore >= 1.5) qualityEmoji = '🟠';
+    if (qualityFScore >= 2.5) qualityEmoji = '🟠';
+    if (qualityFScore >= 3.5) qualityEmoji = '🟡';
+    if (qualityFScore >= 4.5) qualityEmoji = '🟡';
+    if (qualityFScore >= 5.5) qualityEmoji = '🟢';
+    if (qualityFScore >= 6.5) qualityEmoji = '🟢';
+    if (qualityFScore >= 7.5) qualityEmoji = '🟢';
     
-    // Value emoji based on score
-    let valueEmoji = '🟢';
-    if (result.value_score < 40) valueEmoji = '🔴';
-    else if (result.value_score < 60) valueEmoji = '🟠';
-    else if (result.value_score < 80) valueEmoji = '🟡';
-    
-    // Recommendation emoji
-    let recEmoji = '📊';
-    if (result.recommendation === 'STRONG_BUY' || result.recommendation === 'BUY') recEmoji = '📈';
-    else if (result.recommendation === 'SELL' || result.recommendation === 'STRONG_SELL') recEmoji = '📉';
+    // Value emoji - more gradual (10 levels for better differentiation)
+    let valueEmoji = '🔴';
+    if (result.value_score >= 10) valueEmoji = '🟠';
+    if (result.value_score >= 25) valueEmoji = '🟠';
+    if (result.value_score >= 40) valueEmoji = '🟡';
+    if (result.value_score >= 55) valueEmoji = '🟡';
+    if (result.value_score >= 65) valueEmoji = '🟢';
+    if (result.value_score >= 75) valueEmoji = '🟢';
+    if (result.value_score >= 85) valueEmoji = '🟢';
     
     const paddedIndex = (index + 1).toString().padEnd(2);
     const paddedSymbol = result.symbol.padEnd(6);
@@ -220,7 +226,7 @@ function showSummary(results: SummaryResult[], topN?: number) {
     const paddedValue = valueBar.padEnd(12);
     const paddedVScore = result.value_score.toString().padStart(3);
     
-    console.log(`${paddedIndex} ${paddedSymbol} Q:${paddedQuality}${paddedQScore}/9 ${qualityEmoji}  V:${paddedValue}${paddedVScore}/100 ${valueEmoji}  ${recEmoji}`);
+    console.log(`${paddedIndex} ${paddedSymbol} ${paddedQuality}${paddedQScore}/9 ${qualityEmoji}  ${paddedValue}${paddedVScore}/100 ${valueEmoji}`);
   });
 
   console.log('\n' + '═'.repeat(80));
