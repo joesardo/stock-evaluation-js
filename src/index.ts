@@ -3,6 +3,7 @@ import * as path from 'path';
 import { Evaluator } from './evaluator';
 import { DataFetcher } from './data-fetcher';
 import { EvaluationCriteria, EvaluationResult } from './types';
+import { SectorBuilder } from './sector-builder';
 
 interface SummaryResult {
   symbol: string;
@@ -13,26 +14,6 @@ interface SummaryResult {
 async function main() {
   const args = process.argv.slice(2);
 
-  if (args.length === 0) {
-    console.log('Stock Evaluation Tool');
-    console.log('Usage: npm run dev -- SYMBOL1 [SYMBOL2] [SYMBOL3] ...');
-    console.log('       npm run dev -- --sector SECTOR_NAME');
-    console.log('       npm run dev -- --top N');
-    console.log('\nExamples:');
-    console.log('  npm run dev -- AAPL MSFT GOOGL');
-    console.log('  npm run dev -- --sector technology');
-    console.log('  npm run dev -- --top 10');
-    console.log('\nAvailable sectors:');
-    
-    const watchlistsPath = path.join(__dirname, '..', 'config', 'watchlists.json');
-    const watchlists = JSON.parse(fs.readFileSync(watchlistsPath, 'utf-8'));
-    Object.keys(watchlists).forEach(key => {
-      console.log(`  - ${key} (${watchlists[key].symbols.length} stocks)`);
-    });
-    
-    process.exit(1);
-  }
-
   // Load evaluation criteria
   const criteriaPath = path.join(__dirname, '..', 'config', 'evaluation-criteria.json');
   const criteria: EvaluationCriteria = JSON.parse(
@@ -40,6 +21,42 @@ async function main() {
   );
 
   const evaluator = new Evaluator(criteria);
+
+  // Handle special flags
+  if (args[0] === '--rebuild-sectors') {
+    console.log('🔄 Rebuilding sector cache from Yahoo Finance...');
+    SectorBuilder.clearCache();
+    const sectors = await SectorBuilder.getSectors();
+    console.log('\n✅ Sectors rebuilt! Available sectors:');
+    Object.entries(sectors).forEach(([name, data]) => {
+      console.log(`  - ${name} (${data.symbols.length} stocks)`);
+    });
+    process.exit(0);
+  }
+
+  if (args.length === 0) {
+    console.log('Stock Evaluation Tool');
+    console.log('Usage: npm run dev -- SYMBOL1 [SYMBOL2] [SYMBOL3] ...');
+    console.log('       npm run dev -- --sector SECTOR_NAME');
+    console.log('       npm run dev -- --top N');
+    console.log('       npm run dev -- --rebuild-sectors');
+    console.log('\nExamples:');
+    console.log('  npm run dev -- AAPL MSFT GOOGL');
+    console.log('  npm run dev -- --sector Technology');
+    console.log('  npm run dev -- --top 10');
+    console.log('\nAvailable sectors (from Yahoo Finance):');
+    
+    try {
+      const sectors = await SectorBuilder.getSectors();
+      Object.entries(sectors).forEach(([name, data]) => {
+        console.log(`  - ${name} (${data.symbols.length} stocks)`);
+      });
+    } catch (error) {
+      console.log('  (Could not fetch sectors - check internet connection)');
+    }
+    
+    process.exit(1);
+  }
 
   // Determine symbols to evaluate
   let symbols: string[] = [];
@@ -50,18 +67,22 @@ async function main() {
       process.exit(1);
     }
     
-    const sectorName = args[1].toLowerCase();
-    const watchlistsPath = path.join(__dirname, '..', 'config', 'watchlists.json');
-    const watchlists = JSON.parse(fs.readFileSync(watchlistsPath, 'utf-8'));
+    const sectorName = args[1];
+    const sectors = await SectorBuilder.getSectors();
     
-    if (!watchlists[sectorName]) {
+    // Case-insensitive sector lookup
+    const sectorKey = Object.keys(sectors).find(
+      key => key.toLowerCase() === sectorName.toLowerCase()
+    );
+    
+    if (!sectorKey) {
       console.error(`❌ Unknown sector: ${sectorName}`);
-      console.error(`Available sectors: ${Object.keys(watchlists).join(', ')}`);
+      console.error(`Available sectors: ${Object.keys(sectors).join(', ')}`);
       process.exit(1);
     }
     
-    symbols = watchlists[sectorName].symbols;
-    console.log(`\n🎯 Evaluating ${watchlists[sectorName].name} sector (${symbols.length} stocks)\n`);
+    symbols = sectors[sectorKey].symbols;
+    console.log(`\n🎯 Evaluating ${sectorKey} sector (${symbols.length} stocks)\n`);
   } else if (args[0] === '--top') {
     if (args.length < 2 || isNaN(parseInt(args[1]))) {
       console.error('❌ --top requires a number');
@@ -69,12 +90,11 @@ async function main() {
     }
     
     const topN = parseInt(args[1]);
-    const watchlistsPath = path.join(__dirname, '..', 'config', 'watchlists.json');
-    const watchlists = JSON.parse(fs.readFileSync(watchlistsPath, 'utf-8'));
+    const sectors = await SectorBuilder.getSectors();
     
     // Collect all stocks from all sectors
     symbols = [];
-    Object.values(watchlists).forEach((sector: any) => {
+    Object.values(sectors).forEach((sector: any) => {
       symbols.push(...sector.symbols);
     });
     

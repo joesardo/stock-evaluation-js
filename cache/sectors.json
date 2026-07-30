@@ -1,0 +1,165 @@
+{
+  "timestamp": 1785369619501,
+  "sectors": {
+    "Technology": {
+      "name": "Technology",
+      "symbols": [
+        "AAPL",
+        "MSFT",
+        "NVDA",
+        "INTC",
+        "AMD",
+        "CRM",
+        "ADBE",
+        "QCOM",
+        "AVGO",
+        "ASML",
+        "MU",
+        "NXPI",
+        "MCHP",
+        "SNOW",
+        "CRWD",
+        "NET",
+        "DDOG",
+        "OKTA",
+        "WDAY",
+        "ENPH",
+        "RUN",
+        "SEDG"
+      ]
+    },
+    "Communication Services": {
+      "name": "Communication Services",
+      "symbols": [
+        "GOOGL",
+        "META",
+        "NFLX",
+        "VZ",
+        "T",
+        "TMUS",
+        "CHTR",
+        "CMCSA"
+      ]
+    },
+    "Financial Services": {
+      "name": "Financial Services",
+      "symbols": [
+        "JPM",
+        "BAC",
+        "WFC",
+        "GS",
+        "MS",
+        "BLK",
+        "AXP",
+        "COF"
+      ]
+    },
+    "Healthcare": {
+      "name": "Healthcare",
+      "symbols": [
+        "JNJ",
+        "UNH",
+        "LLY",
+        "PFE",
+        "AZN",
+        "ABBV",
+        "TMO",
+        "AMGN",
+        "MRNA",
+        "REGN",
+        "VRTX",
+        "CRSP",
+        "GILD"
+      ]
+    },
+    "Industrials": {
+      "name": "Industrials",
+      "symbols": [
+        "BA",
+        "GE",
+        "MMM",
+        "HON",
+        "CAT",
+        "RTX",
+        "LMT",
+        "NOC",
+        "DAL",
+        "UAL",
+        "AAL",
+        "ALK",
+        "JBLU",
+        "PLUG"
+      ]
+    },
+    "Consumer Cyclical": {
+      "name": "Consumer Cyclical",
+      "symbols": [
+        "TSLA",
+        "F",
+        "GM",
+        "TM",
+        "LI",
+        "NIO",
+        "RIVN",
+        "AMZN",
+        "MCD",
+        "NKE",
+        "SBUX",
+        "HD",
+        "TJX"
+      ]
+    },
+    "Consumer Defensive": {
+      "name": "Consumer Defensive",
+      "symbols": [
+        "WMT",
+        "COST"
+      ]
+    },
+    "Energy": {
+      "name": "Energy",
+      "symbols": [
+        "XOM",
+        "CVX",
+        "COP",
+        "MPC",
+        "PSX",
+        "VLO",
+        "OKE",
+        "KMI"
+      ]
+    },
+    "Utilities": {
+      "name": "Utilities",
+      "symbols": [
+        "NEE",
+        "DUK",
+        "SO",
+        "AEP",
+        "ES",
+        "EXC",
+        "PEG"
+      ]
+    },
+    "Real Estate": {
+      "name": "Real Estate",
+      "symbols": [
+        "SPG",
+        "PLD",
+        "EXR",
+        "PSA",
+        "WELL"
+      ]
+    },
+    "Basic Materials": {
+      "name": "Basic Materials",
+      "symbols": [
+        "NEM",
+        "FCX",
+        "AA",
+        "SCCO",
+        "ALB"
+      ]
+    }
+  }
+}
