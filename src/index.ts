@@ -189,13 +189,38 @@ function showSummary(results: SummaryResult[], topN?: number) {
 
   console.log('\n' + '═'.repeat(80));
   console.log('📊 SUMMARY - Ranked by Quality & Value');
-  console.log('═'.repeat(80) + '\n');
+  console.log('═'.repeat(80));
+  console.log('');
 
   displayed.forEach((result, index) => {
     const qualityFScore = (result.quality_score / 100) * 9;
     const qualityBar = '█'.repeat(Math.round(qualityFScore)) + '░'.repeat(9 - Math.round(qualityFScore));
     const valueBar = '█'.repeat(Math.round(result.value_score / 10)) + '░'.repeat(10 - Math.round(result.value_score / 10));
-    console.log(`${(index + 1).toString().padEnd(3)} ${result.symbol.padEnd(6)} Q:${qualityBar}${qualityFScore.toFixed(1)}/9  V:${valueBar}${result.value_score}/100`);
+    
+    // Quality emoji based on F-Score
+    let qualityEmoji = '🟢';
+    if (qualityFScore < 4) qualityEmoji = '🔴';
+    else if (qualityFScore < 6) qualityEmoji = '🟡';
+    
+    // Value emoji based on score
+    let valueEmoji = '🟢';
+    if (result.value_score < 40) valueEmoji = '🔴';
+    else if (result.value_score < 60) valueEmoji = '🟠';
+    else if (result.value_score < 80) valueEmoji = '🟡';
+    
+    // Recommendation emoji
+    let recEmoji = '📊';
+    if (result.recommendation === 'STRONG_BUY' || result.recommendation === 'BUY') recEmoji = '📈';
+    else if (result.recommendation === 'SELL' || result.recommendation === 'STRONG_SELL') recEmoji = '📉';
+    
+    const paddedIndex = (index + 1).toString().padEnd(2);
+    const paddedSymbol = result.symbol.padEnd(6);
+    const paddedQuality = qualityBar.padEnd(11);
+    const paddedQScore = qualityFScore.toFixed(1).padStart(3);
+    const paddedValue = valueBar.padEnd(12);
+    const paddedVScore = result.value_score.toString().padStart(3);
+    
+    console.log(`${paddedIndex} ${paddedSymbol} Q:${paddedQuality}${paddedQScore}/9 ${qualityEmoji}  V:${paddedValue}${paddedVScore}/100 ${valueEmoji}  ${recEmoji}`);
   });
 
   console.log('\n' + '═'.repeat(80));
@@ -207,25 +232,30 @@ function showSummary(results: SummaryResult[], topN?: number) {
   const sellCount = displayed.filter(r => r.recommendation === 'SELL').length;
   const strongSellCount = displayed.filter(r => r.recommendation === 'STRONG_SELL').length;
   
-  console.log(`\n📈 Quality Breakdown: ${strongBuyCount} A+ | ${buyCount} B+ | ${holdCount} C | ${sellCount} D | ${strongSellCount} F (out of ${displayed.length} evaluated)`);
+  console.log(`\n📈 QUALITY BREAKDOWN:`);
+  console.log(`   ${strongBuyCount} A+ (Excellent) | ${buyCount} B+ (Good) | ${holdCount} C (Fair) | ${sellCount} D (Poor) | ${strongSellCount} F (Very Poor)`);
   
   const excellentValue = displayed.filter(r => r.value_score >= 80).length;
   const goodValue = displayed.filter(r => r.value_score >= 60 && r.value_score < 80).length;
   const fairValue = displayed.filter(r => r.value_score >= 40 && r.value_score < 60).length;
   const expensive = displayed.filter(r => r.value_score < 40).length;
   
-  console.log(`📊 Value Breakdown: ${excellentValue} Excellent | ${goodValue} Good | ${fairValue} Fair | ${expensive} Expensive (out of ${displayed.length} evaluated)`);
+  console.log(`\n💎 VALUE BREAKDOWN:`);
+  console.log(`   ${excellentValue} 🟢 Excellent | ${goodValue} 🟡 Good | ${fairValue} 🟠 Fair | ${expensive} 🔴 Expensive`);
 
   
-  console.log(`\n💡 Highest Quality: ${sorted[0].symbol} (Quality: ${sorted[0].quality_score.toFixed(0)}/100, Value: ${sorted[0].value_score}/100)`);
+  console.log(`\n🏆 HIGHEST QUALITY: ${sorted[0].symbol}`);
+  console.log(`   Quality: ${sorted[0].quality_score.toFixed(0)}/100  │  Value: ${sorted[0].value_score}/100`);
   if (sorted.length > 1) {
     const lowestQuality = sorted[sorted.length - 1];
-    console.log(`   Lowest Quality:  ${lowestQuality.symbol} (Quality: ${lowestQuality.quality_score.toFixed(0)}/100, Value: ${lowestQuality.value_score}/100)`);
+    console.log(`\n⚠️  LOWEST QUALITY: ${lowestQuality.symbol}`);
+    console.log(`   Quality: ${lowestQuality.quality_score.toFixed(0)}/100  │  Value: ${lowestQuality.value_score}/100`);
   }
   
   // Find best value
   const bestValue = displayed.reduce((best, current) => current.value_score > best.value_score ? current : best);
-  console.log(`\n✨ Best Value: ${bestValue.symbol} (Value: ${bestValue.value_score}/100, Quality: ${bestValue.quality_score.toFixed(0)}/100)`);
+  console.log(`\n✨ BEST VALUE: ${bestValue.symbol}`);
+  console.log(`   Value: ${bestValue.value_score}/100  │  Quality: ${bestValue.quality_score.toFixed(0)}/100`);
 }
 
 main().catch(error => {
