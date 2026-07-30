@@ -5,10 +5,14 @@ import { DataFetcher } from './data-fetcher';
 import { EvaluationCriteria, EvaluationResult } from './types';
 import { SectorBuilder } from './sector-builder';
 import { PiotroskiEvaluator } from './piotroski-evaluator';
+import { ValueEvaluator } from './value-evaluator';
 
 interface SummaryResult {
   symbol: string;
-  score: number;
+  quality_score: number; // Piotroski 0-100
+  value_score: number;   // Value 0-100
+  quality_grade: string;
+  value_grade: string;
   recommendation: string;
 }
 
@@ -112,15 +116,18 @@ async function main() {
     try {
       const stockData = await DataFetcher.fetchStockData(symbol);
       
-      // Use Piotroski F-Score framework
+      // Calculate Piotroski F-Score (Quality)
       const fScore = PiotroskiEvaluator.calculateFScore(stockData);
-      const grade = PiotroskiEvaluator.getGrade(fScore);
-      const reasons = PiotroskiEvaluator.getReasons(stockData, fScore);
+      const qualityGrade = PiotroskiEvaluator.getGrade(fScore);
+      const qualityReasons = PiotroskiEvaluator.getReasons(stockData, fScore);
+      const qualityScore100 = (fScore / 9) * 100;
       
-      // Convert F-Score (0-9) to 0-100 scale for consistency
-      const score100 = (fScore / 9) * 100;
+      // Calculate Value Score
+      const valueScore = ValueEvaluator.calculateValueScore(stockData);
+      const valueGrade = ValueEvaluator.getGrade(valueScore);
+      const valueReasons = ValueEvaluator.getReasons(stockData);
       
-      // Determine recommendation based on F-Score
+      // Determine recommendation based on Quality (Piotroski)
       let recommendation: string;
       if (fScore >= 8) recommendation = 'STRONG_BUY';
       else if (fScore >= 6) recommendation = 'BUY';
@@ -130,19 +137,30 @@ async function main() {
       
       results.push({
         symbol: symbol.toUpperCase(),
-        score: score100,
+        quality_score: qualityScore100,
+        value_score: valueScore,
+        quality_grade: qualityGrade,
+        value_grade: valueGrade,
         recommendation
       });
       
-      // Print Piotroski result
+      // Print combined analysis
       console.log(`\n${'━'.repeat(80)}`);
-      console.log(`📊 Piotroski F-Score Analysis: ${symbol.toUpperCase()}`);
+      console.log(`📊 Stock Analysis: ${symbol.toUpperCase()}`);
       console.log(`${'━'.repeat(80)}\n`);
       console.log(`Company: ${stockData.company_name}`);
-      console.log(`Current Price: $${stockData.price.toFixed(2)}`);
-      console.log(`F-Score: ${fScore}/9 ${grade}\n`);
+      console.log(`Current Price: $${stockData.price.toFixed(2)}\n`);
+      
+      // Quality (Piotroski)
+      console.log(`📈 QUALITY (Piotroski F-Score): ${fScore}/9 ${qualityGrade}`);
       console.log(`Analysis:`);
-      reasons.forEach(reason => console.log(`  ${reason}`));
+      qualityReasons.forEach(reason => console.log(`  ${reason}`));
+      
+      // Value Analysis
+      console.log(`\n💎 VALUE: ${valueScore}/100 ${valueGrade}`);
+      console.log(`Analysis:`);
+      valueReasons.forEach(reason => console.log(`  ${reason}`));
+      
       console.log(`\n📌 Recommendation: ${recommendation}`);
       console.log(`${'━'.repeat(80)}\n`);
 
@@ -163,22 +181,21 @@ function showSummary(results: SummaryResult[], topN?: number) {
     return;
   }
 
-  // Sort by score descending
-  const sorted = [...results].sort((a, b) => b.score - a.score);
+  // Sort by quality score descending
+  const sorted = [...results].sort((a, b) => b.quality_score - a.quality_score);
 
   // Apply top N filter if specified
   const displayed = topN ? sorted.slice(0, topN) : sorted;
 
   console.log('\n' + '═'.repeat(80));
-  console.log('📊 SUMMARY - Ranked by Piotroski F-Score');
+  console.log('📊 SUMMARY - Ranked by Quality & Value');
   console.log('═'.repeat(80) + '\n');
 
   displayed.forEach((result, index) => {
-    // Show F-Score (0-9) format
-    const fScore = (result.score / 100) * 9;
-    const scoreBar = '█'.repeat(Math.round(fScore)) + '░'.repeat(9 - Math.round(fScore));
-    const grade = PiotroskiEvaluator.getGrade(fScore);
-    console.log(`${(index + 1).toString().padEnd(3)} ${result.symbol.padEnd(6)} ${scoreBar} ${fScore.toFixed(1)}/9 [${grade}]  ${result.recommendation}`);
+    const qualityFScore = (result.quality_score / 100) * 9;
+    const qualityBar = '█'.repeat(Math.round(qualityFScore)) + '░'.repeat(9 - Math.round(qualityFScore));
+    const valueBar = '█'.repeat(Math.round(result.value_score / 10)) + '░'.repeat(10 - Math.round(result.value_score / 10));
+    console.log(`${(index + 1).toString().padEnd(3)} ${result.symbol.padEnd(6)} Q:${qualityBar}${qualityFScore.toFixed(1)}/9  V:${valueBar}${result.value_score}/100`);
   });
 
   console.log('\n' + '═'.repeat(80));
@@ -190,13 +207,25 @@ function showSummary(results: SummaryResult[], topN?: number) {
   const sellCount = displayed.filter(r => r.recommendation === 'SELL').length;
   const strongSellCount = displayed.filter(r => r.recommendation === 'STRONG_SELL').length;
   
-  console.log(`\n📈 Breakdown: ${strongBuyCount} A+ | ${buyCount} B+ | ${holdCount} C | ${sellCount} D | ${strongSellCount} F (out of ${displayed.length} evaluated)`);
+  console.log(`\n📈 Quality Breakdown: ${strongBuyCount} A+ | ${buyCount} B+ | ${holdCount} C | ${sellCount} D | ${strongSellCount} F (out of ${displayed.length} evaluated)`);
+  
+  const excellentValue = displayed.filter(r => r.value_score >= 80).length;
+  const goodValue = displayed.filter(r => r.value_score >= 60 && r.value_score < 80).length;
+  const fairValue = displayed.filter(r => r.value_score >= 40 && r.value_score < 60).length;
+  const expensive = displayed.filter(r => r.value_score < 40).length;
+  
+  console.log(`📊 Value Breakdown: ${excellentValue} Excellent | ${goodValue} Good | ${fairValue} Fair | ${expensive} Expensive (out of ${displayed.length} evaluated)`);
 
   
-  console.log(`\n💡 Highest: ${sorted[0].symbol} (${sorted[0].score.toFixed(0)}/100)`);
+  console.log(`\n💡 Highest Quality: ${sorted[0].symbol} (Quality: ${sorted[0].quality_score.toFixed(0)}/100, Value: ${sorted[0].value_score}/100)`);
   if (sorted.length > 1) {
-    console.log(`   Lowest:  ${sorted[sorted.length - 1].symbol} (${sorted[sorted.length - 1].score.toFixed(0)}/100)`);
+    const lowestQuality = sorted[sorted.length - 1];
+    console.log(`   Lowest Quality:  ${lowestQuality.symbol} (Quality: ${lowestQuality.quality_score.toFixed(0)}/100, Value: ${lowestQuality.value_score}/100)`);
   }
+  
+  // Find best value
+  const bestValue = displayed.reduce((best, current) => current.value_score > best.value_score ? current : best);
+  console.log(`\n✨ Best Value: ${bestValue.symbol} (Value: ${bestValue.value_score}/100, Quality: ${bestValue.quality_score.toFixed(0)}/100)`);
 }
 
 main().catch(error => {
