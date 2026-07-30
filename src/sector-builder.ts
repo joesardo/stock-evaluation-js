@@ -22,42 +22,78 @@ export class SectorBuilder {
   private static readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
   /**
-   * List of well-known stocks to bootstrap sector detection
-   * These stocks cover major sectors and serve as anchors
+   * Comprehensive list of well-known stocks to bootstrap sector detection
+   * These ~280 stocks cover all major sectors and serve as anchors
    */
   private static readonly BOOTSTRAP_STOCKS = [
-    // Technology
-    'AAPL', 'MSFT', 'GOOGL', 'META', 'NVDA', 'INTC', 'AMD', 'CRM', 'ADBE', 'NFLX',
-    // Semiconductors
-    'QCOM', 'AVGO', 'ASML', 'MU', 'NXPI', 'MCHP',
-    // Cloud/Software
-    'SNOW', 'CRWD', 'NET', 'DDOG', 'OKTA', 'WDAY',
-    // Finance
-    'JPM', 'BAC', 'WFC', 'GS', 'MS', 'BLK', 'AXP', 'COF',
-    // Healthcare
-    'JNJ', 'UNH', 'LLY', 'PFE', 'AZN', 'ABBV', 'TMO', 'AMGN',
-    // Biotech
-    'MRNA', 'REGN', 'VRTX', 'CRSP', 'GILD',
-    // Industrials
-    'BA', 'GE', 'MMM', 'HON', 'CAT', 'RTX', 'LMT', 'NOC',
-    // Airlines
-    'DAL', 'UAL', 'AAL', 'ALK', 'JBLU',
-    // Automotive/EV
-    'TSLA', 'F', 'GM', 'TM', 'LI', 'NIO', 'RIVN',
-    // Consumer
-    'AMZN', 'WMT', 'COST', 'MCD', 'NKE', 'SBUX', 'HD', 'TJX',
-    // Energy
-    'XOM', 'CVX', 'COP', 'MPC', 'PSX', 'VLO', 'OKE', 'KMI',
-    // Renewables
-    'NEE', 'PLUG', 'ENPH', 'RUN', 'SEDG',
-    // Telecom
-    'VZ', 'T', 'TMUS', 'CHTR', 'CMCSA',
-    // Utilities
-    'DUK', 'SO', 'AEP', 'ES', 'EXC', 'PEG',
-    // Real Estate
-    'SPG', 'PLD', 'EXR', 'PSA', 'WELL',
-    // Materials
-    'NEM', 'FCX', 'AA', 'SCCO', 'ALB',
+    // Technology - Large Cap
+    'AAPL', 'MSFT', 'GOOGL', 'GOOG', 'META', 'NVDA', 'INTC', 'AMD', 'TSLA',
+    // Technology - Software/Cloud
+    'CRM', 'ADBE', 'NFLX', 'SNOW', 'CRWD', 'NET', 'DDOG', 'OKTA', 'WDAY', 'TWLO', 'ZOOM', 'SHOP', 'MONGODB', 'DATADOG', 'SUMO',
+    // Technology - Semiconductors
+    'QCOM', 'AVGO', 'ASML', 'MU', 'NXPI', 'MCHP', 'BROADCOM', 'MICRON', 'QUALCOMM', 'XILINX', 'AMAT', 'LRCX', 'KLAC', 'MRVL',
+    // Technology - Hardware/Peripherals
+    'CORSAIR', 'LOGITECH', 'HP', 'DELL', 'LENOVO',
+    // Communication Services
+    'GOOGL', 'META', 'NFLX', 'VZ', 'T', 'TMUS', 'CHTR', 'CMCSA', 'DISH', 'ROKU', 'FUBO', 'PENN', 'SNAP', 'PINS', 'TTD', 'MSTR',
+    // Healthcare - Large Pharma
+    'JNJ', 'UNH', 'LLY', 'PFE', 'AZN', 'ABBV', 'TMO', 'AMGN', 'MERCK', 'BRISTOL', 'REGENERON', 'VERTEX', 'GILEAD', 'BRISTOL', 'MODERNA',
+    // Healthcare - Healthcare Services
+    'CVS', 'WBA', 'ANET', 'HUM', 'CI', 'ANTM', 'GILD', 'VEEV',
+    // Healthcare - Medical Devices
+    'MEDTRONIC', 'STRYKER', 'INTUITIVE', 'ZIMMER', 'EDWARDS', 'BOSTON', 'BAXTER', 'FRESENIUS', 'ALIGN',
+    // Healthcare - Biotech
+    'MRNA', 'BNTX', 'INOVIO', 'VRTX', 'CRSP', 'EDIT', 'VERV', 'SRPT', 'IMAB', 'BEAM',
+    // Financials - Banks
+    'JPM', 'BAC', 'WFC', 'GS', 'MS', 'BLK', 'AXP', 'COF', 'C', 'PNC', 'USB', 'TFC', 'FITB', 'HBAN', 'KEY', 'ZION', 'EWBC', 'PACW',
+    // Financials - Insurance
+    'BRK', 'AIG', 'ALL', 'LPL', 'HLF', 'MMC', 'AON', 'ICE', 'CBOE', 'NDAQ',
+    // Financials - Investment/Brokerage
+    'SCHW', 'TD', 'IBKR', 'VLTI', 'MUFG', 'DFS',
+    // Consumer Cyclical - Retail
+    'AMZN', 'WMT', 'COST', 'MCD', 'HD', 'TJX', 'TGT', 'AZO', 'FIVE', 'ROST', 'ULTA', 'DLTR', 'CERN', 'CBRL', 'SHAK', 'DINE',
+    // Consumer Cyclical - Fashion/Apparel
+    'NKE', 'LULU', 'YUM', 'MKL', 'VF', 'UAA', 'ATHM', 'EBAY',
+    // Consumer Cyclical - Restaurants
+    'SBUX', 'DPZ', 'CPRI', 'EAT', 'WING', 'QSR', 'MMS',
+    // Consumer Cyclical - Automotive
+    'F', 'GM', 'TM', 'HMC', 'BMW', 'RACE', 'NIO', 'LI', 'XPEV', 'RIVN', 'LCID', 'POLESTAR',
+    // Consumer Defensive
+    'PG', 'KO', 'PEP', 'MO', 'PM', 'MNST', 'KEURIG', 'CPB', 'GIS', 'K', 'MDLZ', 'NSRGY',
+    // Industrials - Aerospace/Defense
+    'BA', 'RTX', 'LMT', 'NOC', 'GD', 'HII', 'TDG', 'SPX', 'GE', 'RKLB',
+    // Industrials - Machinery/Equipment
+    'CAT', 'CNH', 'DOOO', 'AAON', 'AYI', 'BLDR', 'RH',
+    // Industrials - Electrical Equipment
+    'MMM', 'ABB', 'EATON', 'ROP', 'INGR', 'OTIS', 'CARR', 'GMTX',
+    // Industrials - Diversified
+    'HON', 'ITT', 'IDXX', 'WM', 'RSG', 'VEON', 'CP', 'NSC', 'UNP', 'CSX', 'KSU', 'ALK', 'DAL', 'UAL', 'AAL', 'JBLU', 'SAVE',
+    // Energy - Oil & Gas
+    'XOM', 'CVX', 'COP', 'MPC', 'PSX', 'VLO', 'FANG', 'OXY', 'PXD', 'CIVI', 'EOG', 'HES', 'EOG', 'TRGC', 'EQT', 'CMPR',
+    // Energy - Pipelines
+    'OKE', 'KMI', 'EPD', 'MMP', 'APL', 'PAA', 'AM', 'WEC', 'ES',
+    // Utilities - Electric
+    'DUK', 'SO', 'AEP', 'ES', 'EXC', 'PEG', 'NEE', 'FE', 'CMS', 'WEC', 'AWK', 'NWN', 'EQT', 'UGI',
+    // Utilities - Gas
+    'ONE', 'ATR', 'AVNT', 'CMS', 'NWN', 'UGI', 'SJW',
+    // Renewables/Clean Energy
+    'NEE', 'PLUG', 'ENPH', 'RUN', 'SEDG', 'ADANIGREEN', 'ADANIPOWER', 'ADANITRANS', 'RELIANCE', 'ACME',
+    // Real Estate - Retail
+    'SPG', 'KIM', 'WRI', 'PEI', 'TCO', 'MAC',
+    // Real Estate - Industrial
+    'PLD', 'DRE', 'EGP', 'STAG', 'PLD', 'VICI', 'STAG',
+    // Real Estate - Residential
+    'EXR', 'PSA', 'CUBE', 'WELL', 'UMH', 'NHI', 'CTRE', 'AIV',
+    // Real Estate - Diversified
+    'AMT', 'VICI', 'SPG', 'O', 'ABBV', 'ADC', 'REXR', 'IRM', 'SRC', 'LAMR',
+    // Materials - Metals & Mining
+    'NEM', 'FCX', 'AA', 'SCCO', 'ALB', 'RIO', 'BHP', 'VALE', 'TECK', 'NUCOR', 'CLF', 'TX', 'RSG',
+    // Materials - Chemicals
+    'LYB', 'APD', 'SHW', 'CTVA', 'CE', 'DD', 'ECL', 'EMN', 'IFF', 'PPG', 'WRK',
+    // Materials - Construction/Aerospace
+    'MLM', 'LEG', 'APO', 'SWX', 'UFPI', 'WMS', 'HUBB',
+    // Basic Materials
+    'CX', 'SLVM', 'AVNT', 'ADANIGREEN', 'ADANIPOWER',
   ];
 
   /**
