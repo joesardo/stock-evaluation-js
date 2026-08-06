@@ -1,5 +1,5 @@
 {
-  "timestamp": 1785371285498,
+  "timestamp": 1786058398439,
   "sectors": {
     "Technology": {
       "name": "Technology",
@@ -201,12 +201,6 @@
         "MDLZ",
         "NSRGY",
         "INGR"
-      ]
-    },
-    "Unknown": {
-      "name": "Unknown",
-      "symbols": [
-        "DINE"
       ]
     },
     "Industrials": {
