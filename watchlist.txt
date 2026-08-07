@@ -1,7 +1,0 @@
-# Stock Watchlist
-# Add one ticker symbol per line
-# Lines starting with # are comments and will be ignored
-# Examples:
-# AAPL
-# MSFT
-# GOOGL
