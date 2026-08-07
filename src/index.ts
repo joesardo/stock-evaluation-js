@@ -6,6 +6,7 @@ import { EvaluationCriteria, EvaluationResult } from './types';
 import { SectorBuilder } from './sector-builder';
 import { PiotroskiEvaluator } from './piotroski-evaluator';
 import { ValueEvaluator } from './value-evaluator';
+import { WatchlistManager } from './watchlist-manager';
 
 interface SummaryResult {
   symbol: string;
@@ -43,12 +44,14 @@ async function main() {
     console.log('Stock Evaluation Tool - Piotroski F-Score Analysis\n');
     console.log('Usage: npm run dev -- SYMBOL [SYMBOL2] [SYMBOL3] ...');
     console.log('       npm run dev -- SECTOR_NAME');
+    console.log('       npm run dev -- --watchlist');
     console.log('       npm run dev -- --top N');
     console.log('       npm run dev -- --rebuild-sectors\n');
     console.log('Examples:');
     console.log('  npm run dev -- AAPL');
     console.log('  npm run dev -- AAPL MSFT GOOGL');
     console.log('  npm run dev -- Technology');
+    console.log('  npm run dev -- --watchlist');
     console.log('  npm run dev -- --top 10\n');
     console.log('Available sectors:');
     
@@ -67,8 +70,19 @@ async function main() {
   // Determine symbols to evaluate
   let symbols: string[] = [];
   let sectorName: string | null = null;
+  let isWatchlist = false;
 
-  if (args[0] === '--top') {
+  if (args[0] === '--watchlist') {
+    const watchlistTickers = WatchlistManager.getTickers();
+    if (watchlistTickers.length === 0) {
+      console.log('❌ Your watchlist is empty!');
+      console.log('\nAdd tickers with: npm run watchlist:add -- SYMBOL');
+      process.exit(1);
+    }
+    symbols = watchlistTickers;
+    isWatchlist = true;
+    console.log(`\n👀 Evaluating your watchlist (${symbols.length} tickers)\n`);
+  } else if (args[0] === '--top') {
     if (args.length < 2 || isNaN(parseInt(args[1]))) {
       console.error('❌ --top requires a number');
       process.exit(1);
@@ -169,8 +183,8 @@ async function main() {
     }
   }
 
-  // Show summary if evaluating sector or top
-  if (sectorName || args[0] === '--top') {
+  // Show summary if evaluating sector, watchlist, or top
+  if (sectorName || isWatchlist || args[0] === '--top') {
     showSummary(results, args[0] === '--top' ? parseInt(args[1]) : undefined);
   }
 }
