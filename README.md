@@ -50,12 +50,12 @@ npm run dev -- MSFT GOOGL TSLA
 Evaluate all stocks in a specific sector and get ranked results:
 
 ```bash
-npm run dev -- --sector technology
-npm run dev -- --sector financials
-npm run dev -- --sector healthcare
+npm run dev -- Technology
+npm run dev -- Financials
+npm run dev -- Healthcare
 ```
 
-Available sectors: technology, financials, healthcare, industrials, consumer, energy, telecom, utilities, realestate, materials
+Available sectors: Technology, Communication Services, Consumer Cyclical, Consumer Defensive, Energy, Financial Services, Healthcare, Industrials, Basic Materials, Real Estate, Utilities
 
 ### Find top performers
 
