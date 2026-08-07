@@ -9,7 +9,10 @@
     "dev": "ts-node src/index.ts",
     "evaluate": "ts-node src/index.ts",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "watchlist:list": "ts-node src/cli-watchlist.ts list",
+    "watchlist:add": "ts-node src/cli-watchlist.ts add",
+    "watchlist:remove": "ts-node src/cli-watchlist.ts remove"
   },
   "keywords": [
     "stock",
