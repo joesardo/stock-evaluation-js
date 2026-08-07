@@ -1,7 +1,8 @@
 {
   "sectors": {
-    "Technology": {
-      "name": "Technology",
+    "Tech": {
+      "name": "Tech",
+      "display": "Technology",
       "symbols": [
         "AAPL",
         "MSFT",
@@ -38,32 +39,74 @@
         "SEDG"
       ]
     },
-    "Communication Services": {
-      "name": "Communication Services",
+    "Semiconductors": {
+      "name": "Semiconductors",
+      "display": "Semiconductors & Chips",
+      "symbols": [
+        "NVDA",
+        "INTC",
+        "AMD",
+        "QCOM",
+        "AVGO",
+        "ASML",
+        "MU",
+        "NXPI",
+        "MCHP",
+        "AMAT",
+        "LRCX",
+        "KLAC",
+        "MRVL"
+      ]
+    },
+    "SoftwareServices": {
+      "name": "SoftwareServices",
+      "display": "Software & Services",
+      "symbols": [
+        "MSFT",
+        "CRM",
+        "ADBE",
+        "SNOW",
+        "CRWD",
+        "NET",
+        "DDOG",
+        "OKTA",
+        "WDAY",
+        "TWLO",
+        "VEEV",
+        "ROP"
+      ]
+    },
+    "Media": {
+      "name": "Media",
+      "display": "Media & Entertainment",
       "symbols": [
         "GOOGL",
         "GOOG",
         "META",
         "NFLX",
-        "VZ",
-        "T",
-        "TMUS",
-        "CHTR",
-        "CMCSA",
         "ROKU",
         "FUBO",
         "SNAP",
         "PINS",
         "TTD",
-        "ATHM",
-        "VEON"
+        "ATHM"
       ]
     },
-    "Consumer Cyclical": {
-      "name": "Consumer Cyclical",
+    "Telecom": {
+      "name": "Telecom",
+      "display": "Telecommunications",
       "symbols": [
-        "TSLA",
-        "PENN",
+        "VZ",
+        "T",
+        "TMUS",
+        "CHTR",
+        "CMCSA"
+      ]
+    },
+    "Retail": {
+      "name": "Retail",
+      "display": "Retail & Consumer",
+      "symbols": [
         "AMZN",
         "MCD",
         "HD",
@@ -77,14 +120,19 @@
         "NKE",
         "LULU",
         "YUM",
-        "UAA",
-        "EBAY",
         "SBUX",
         "DPZ",
         "CPRI",
         "EAT",
         "WING",
-        "QSR",
+        "QSR"
+      ]
+    },
+    "Automotive": {
+      "name": "Automotive",
+      "display": "Automotive & EVs",
+      "symbols": [
+        "TSLA",
         "F",
         "GM",
         "TM",
@@ -94,15 +142,13 @@
         "LI",
         "XPEV",
         "RIVN",
-        "LCID",
-        "RH",
-        "LEG"
+        "LCID"
       ]
     },
     "Energy": {
       "name": "Energy",
+      "display": "Energy & Oil",
       "symbols": [
-        "HP",
         "XOM",
         "CVX",
         "COP",
@@ -116,12 +162,23 @@
         "OKE",
         "KMI",
         "EPD",
-        "PAA",
-        "AM"
+        "PAA"
+      ]
+    },
+    "Renewables": {
+      "name": "Renewables",
+      "display": "Renewable Energy",
+      "symbols": [
+        "ENPH",
+        "RUN",
+        "SEDG",
+        "NEE",
+        "PLUG"
       ]
     },
     "Healthcare": {
       "name": "Healthcare",
+      "display": "Healthcare & Pharma",
       "symbols": [
         "JNJ",
         "UNH",
@@ -135,20 +192,26 @@
         "HUM",
         "CI",
         "GILD",
-        "VEEV",
+        "IDXX",
+        "ATR"
+      ]
+    },
+    "Biotech": {
+      "name": "Biotech",
+      "display": "Biotechnology",
+      "symbols": [
         "MRNA",
         "BNTX",
         "VRTX",
         "CRSP",
         "EDIT",
         "SRPT",
-        "BEAM",
-        "IDXX",
-        "ATR"
+        "BEAM"
       ]
     },
-    "Financial Services": {
-      "name": "Financial Services",
+    "Banking": {
+      "name": "Banking",
+      "display": "Banking & Financial Services",
       "symbols": [
         "JPM",
         "BAC",
@@ -156,9 +219,6 @@
         "GS",
         "MS",
         "BLK",
-        "AXP",
-        "COF",
-        "C",
         "PNC",
         "USB",
         "TFC",
@@ -167,6 +227,18 @@
         "KEY",
         "ZION",
         "EWBC",
+        "TD",
+        "IBKR",
+        "MUFG"
+      ]
+    },
+    "Finance": {
+      "name": "Finance",
+      "display": "Finance & Insurance",
+      "symbols": [
+        "AXP",
+        "COF",
+        "C",
         "AIG",
         "ALL",
         "AON",
@@ -174,17 +246,25 @@
         "CBOE",
         "NDAQ",
         "SCHW",
-        "TD",
-        "IBKR",
-        "MUFG",
         "MKL",
         "APO"
       ]
     },
-    "Consumer Defensive": {
-      "name": "Consumer Defensive",
+    "Insurance": {
+      "name": "Insurance",
+      "display": "Insurance & Risk Management",
       "symbols": [
-        "HLF",
+        "AIG",
+        "ALL",
+        "AON",
+        "MKL",
+        "APO"
+      ]
+    },
+    "Staples": {
+      "name": "Staples",
+      "display": "Consumer Staples",
+      "symbols": [
         "WMT",
         "COST",
         "TGT",
@@ -192,29 +272,49 @@
         "PG",
         "KO",
         "PEP",
-        "MO",
-        "PM",
-        "MNST",
-        "CPB",
-        "GIS",
         "MDLZ",
         "NSRGY",
-        "INGR"
+        "INGR",
+        "HLF"
       ]
     },
-    "Industrials": {
-      "name": "Industrials",
+    "Tobacco": {
+      "name": "Tobacco",
+      "display": "Tobacco",
       "symbols": [
-        "MMS",
+        "MO",
+        "PM"
+      ]
+    },
+    "Beverages": {
+      "name": "Beverages",
+      "display": "Beverages & Tobacco",
+      "symbols": [
+        "KO",
+        "PEP",
+        "MNST",
+        "MO",
+        "PM"
+      ]
+    },
+    "Aerospace": {
+      "name": "Aerospace",
+      "display": "Aerospace & Defense",
+      "symbols": [
         "BA",
         "RTX",
         "LMT",
         "NOC",
         "GD",
         "HII",
-        "TDG",
+        "TDG"
+      ]
+    },
+    "Industrial": {
+      "name": "Industrial",
+      "display": "Industrials & Manufacturing",
+      "symbols": [
         "GE",
-        "RKLB",
         "CAT",
         "CNH",
         "AAON",
@@ -225,8 +325,24 @@
         "CARR",
         "HON",
         "ITT",
+        "RKLB",
+        "CMPR",
+        "WMS",
+        "HUBB"
+      ]
+    },
+    "Waste": {
+      "name": "Waste",
+      "display": "Waste Management",
+      "symbols": [
         "WM",
-        "RSG",
+        "RSG"
+      ]
+    },
+    "Transportation": {
+      "name": "Transportation",
+      "display": "Transportation & Logistics",
+      "symbols": [
         "CP",
         "NSC",
         "UNP",
@@ -235,15 +351,12 @@
         "DAL",
         "UAL",
         "AAL",
-        "JBLU",
-        "CMPR",
-        "PLUG",
-        "WMS",
-        "HUBB"
+        "JBLU"
       ]
     },
     "Utilities": {
       "name": "Utilities",
+      "display": "Utilities",
       "symbols": [
         "WEC",
         "ES",
@@ -261,10 +374,10 @@
         "SWX"
       ]
     },
-    "Basic Materials": {
-      "name": "Basic Materials",
+    "Materials": {
+      "name": "Materials",
+      "display": "Materials & Chemicals",
       "symbols": [
-        "AVNT",
         "NEM",
         "FCX",
         "AA",
@@ -292,8 +405,25 @@
         "SLVM"
       ]
     },
-    "Real Estate": {
-      "name": "Real Estate",
+    "Mining": {
+      "name": "Mining",
+      "display": "Mining & Metals",
+      "symbols": [
+        "NEM",
+        "FCX",
+        "AA",
+        "SCCO",
+        "ALB",
+        "RIO",
+        "BHP",
+        "VALE",
+        "TECK",
+        "CLF"
+      ]
+    },
+    "RealEstate": {
+      "name": "RealEstate",
+      "display": "Real Estate & REITs",
       "symbols": [
         "SPG",
         "KIM",
@@ -316,6 +446,22 @@
         "REXR",
         "IRM",
         "LAMR"
+      ]
+    },
+    "Furniture": {
+      "name": "Furniture",
+      "display": "Furniture & Home",
+      "symbols": [
+        "RH",
+        "LEG"
+      ]
+    },
+    "Gaming": {
+      "name": "Gaming",
+      "display": "Gaming & Entertainment",
+      "symbols": [
+        "PENN",
+        "FUBO"
       ]
     }
   }

@@ -57,9 +57,13 @@ async function main() {
     
     try {
       const sectors = await SectorBuilder.getSectors();
-      Object.entries(sectors).forEach(([name, data]) => {
-        console.log(`  ${name} (${data.symbols.length} stocks)`);
-      });
+      const sectorList = Object.entries(sectors)
+        .map(([key, data]: [string, any]) => {
+          const display = data.display || data.name;
+          return `  ${key.padEnd(20)} - ${display} (${data.symbols.length} stocks)`;
+        })
+        .join('\n');
+      console.log(sectorList);
     } catch (error) {
       console.log('  (Could not fetch sectors - check internet connection)');
     }
