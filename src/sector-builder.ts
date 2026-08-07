@@ -9,7 +9,6 @@ interface SectorData {
 }
 
 interface SectorCache {
-  timestamp: number;
   sectors: SectorData;
 }
 
@@ -19,7 +18,6 @@ interface SectorCache {
  */
 export class SectorBuilder {
   private static readonly CACHE_PATH = path.join(__dirname, '..', 'cache', 'sectors.json');
-  private static readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
   /**
    * Comprehensive list of well-known stocks to bootstrap sector detection
@@ -103,7 +101,7 @@ export class SectorBuilder {
     // Check cache first
     const cached = this.loadCache();
     if (cached) {
-      console.log('📦 Using cached sectors (built ' + new Date(cached.timestamp).toLocaleString() + ')');
+      console.log('📦 Using cached sectors');
       return cached.sectors;
     }
 
@@ -160,7 +158,7 @@ export class SectorBuilder {
   }
 
   /**
-   * Load sectors from cache if valid
+   * Load sectors from cache if it exists
    */
   private static loadCache(): SectorCache | null {
     try {
@@ -169,13 +167,6 @@ export class SectorBuilder {
       }
 
       const cached = JSON.parse(fs.readFileSync(this.CACHE_PATH, 'utf-8')) as SectorCache;
-      const age = Date.now() - cached.timestamp;
-
-      if (age > this.CACHE_TTL) {
-        console.log('⏰ Cache expired, rebuilding...');
-        return null;
-      }
-
       return cached;
     } catch (error) {
       return null;
@@ -193,7 +184,6 @@ export class SectorBuilder {
       }
 
       const cache: SectorCache = {
-        timestamp: Date.now(),
         sectors
       };
 
