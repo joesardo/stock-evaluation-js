@@ -123,7 +123,7 @@ export class SectorBuilder {
   static async getSectors(): Promise<SectorData> {
     // Check cache first
     const cached = this.loadCache();
-    if (cached) {
+    if (cached?.sectors) {
       console.log('📦 Using cached sectors');
       return cached.sectors;
     }
@@ -131,8 +131,9 @@ export class SectorBuilder {
     console.log('🔄 Building sector watchlists from Yahoo Finance...');
     const sectors = await this.buildSectors();
     
-    // Save cache (will be merged with industries if also built)
-    this.saveCache(sectors, undefined);
+    // Save cache, preserving industries
+    const currentIndustries = cached?.industries;
+    this.saveCache(sectors, currentIndustries);
     
     return sectors;
   }
@@ -151,11 +152,25 @@ export class SectorBuilder {
     console.log('🔄 Building industry watchlists from Yahoo Finance...');
     const industries = await this.buildIndustries();
     
-    // Save cache
+    // Save cache, preserving sectors
     const currentSectors = cached?.sectors || {};
     this.saveCache(currentSectors, industries);
     
     return industries;
+  }
+
+  /**
+   * Rebuild both sectors and industries together (preferred method)
+   */
+  static async rebuildAll(): Promise<{ sectors: SectorData; industries: IndustryData }> {
+    console.log('🔄 Rebuilding both sectors and industries from Yahoo Finance...');
+    const sectors = await this.buildSectors();
+    const industries = await this.buildIndustries();
+    
+    // Save both together
+    this.saveCache(sectors, industries);
+    
+    return { sectors, industries };
   }
 
   /**

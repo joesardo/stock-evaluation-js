@@ -29,7 +29,22 @@ async function main() {
   const evaluator = new Evaluator(criteria);
 
   // Handle special flags
+  if (args[0] === '--rebuild' || args[0] === '--rebuild-all') {
+    SectorBuilder.clearCache();
+    const { sectors, industries } = await SectorBuilder.rebuildAll();
+    console.log('\n✅ Sectors rebuilt! Available sectors:');
+    Object.entries(sectors).forEach(([name, data]) => {
+      console.log(`  - ${name} (${data.symbols.length} stocks)`);
+    });
+    console.log('\n✅ Industries rebuilt! Available industries:');
+    Object.entries(industries).forEach(([name, data]) => {
+      console.log(`  - ${name} (${data.symbols.length} stocks)`);
+    });
+    process.exit(0);
+  }
+
   if (args[0] === '--rebuild-sectors') {
+    console.log('⚠️  Note: Use "npm run dev -- --rebuild" to update both sectors AND industries together');
     console.log('🔄 Rebuilding sector cache from Yahoo Finance...');
     SectorBuilder.clearCache();
     const sectors = await SectorBuilder.getSectors();
@@ -41,6 +56,7 @@ async function main() {
   }
 
   if (args[0] === '--rebuild-industries') {
+    console.log('⚠️  Note: Use "npm run dev -- --rebuild" to update both sectors AND industries together');
     console.log('🔄 Rebuilding industry cache from Yahoo Finance...');
     SectorBuilder.clearCache();
     const industries = await SectorBuilder.getIndustries();
@@ -58,8 +74,8 @@ async function main() {
     console.log('       npm run dev -- --industry INDUSTRY_NAME');
     console.log('       npm run dev -- --watchlist');
     console.log('       npm run dev -- --top N');
-    console.log('       npm run dev -- --rebuild-sectors');
-    console.log('       npm run dev -- --rebuild-industries\n');
+    console.log('       npm run dev -- --rebuild (rebuilds both sectors & industries)');
+    console.log('       npm run dev -- --rebuild-sectors (legacy)');
     console.log('Examples:');
     console.log('  npm run dev -- AAPL');
     console.log('  npm run dev -- AAPL MSFT GOOGL');
