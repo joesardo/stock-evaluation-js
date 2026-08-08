@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import cors from 'cors'
 import { SectorBuilder } from './src/sector-builder'
 import { DataFetcher } from './src/data-fetcher'
@@ -12,27 +12,41 @@ app.use(cors())
 app.use(express.json())
 
 // GET /api/sectors
-app.get('/api/sectors', async (_req, res) => {
+app.get('/api/sectors', async (_req: Request, res: Response) => {
   try {
     const sectors = await SectorBuilder.getSectors()
-    res.json(sectors)
+    // Transform to array format for frontend
+    const sectorArray = Object.entries(sectors).map(([key, data]: [string, any]) => ({
+      name: data.name,
+      symbols: data.symbols
+    }))
+    const result: { [key: string]: any[] } = {}
+    Object.values(sectors).forEach((sector: any) => {
+      result[sector.name] = sector.symbols.map((symbol: string) => ({ symbol }))
+    })
+    res.json(result)
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch sectors' })
   }
 })
 
 // GET /api/industries
-app.get('/api/industries', async (_req, res) => {
+app.get('/api/industries', async (_req: Request, res: Response) => {
   try {
     const industries = await SectorBuilder.getIndustries()
-    res.json(industries)
+    // Transform to array format for frontend
+    const result: { [key: string]: any[] } = {}
+    Object.values(industries).forEach((industry: any) => {
+      result[industry.name] = industry.symbols.map((symbol: string) => ({ symbol }))
+    })
+    res.json(result)
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch industries' })
   }
 })
 
 // POST /api/evaluate/sector
-app.post('/api/evaluate/sector', async (req, res) => {
+app.post('/api/evaluate/sector', async (req: Request, res: Response) => {
   try {
     const { sector } = req.body
     if (!sector) {
@@ -40,27 +54,35 @@ app.post('/api/evaluate/sector', async (req, res) => {
     }
 
     const sectors = await SectorBuilder.getSectors()
-    const stocks = sectors[sector] || []
+    
+    // Find the sector by comparing with the simplified name
+    let targetSector: any = null
+    for (const [_, sectorData] of Object.entries(sectors)) {
+      if ((sectorData as any).name === sector) {
+        targetSector = sectorData
+        break
+      }
+    }
 
-    if (stocks.length === 0) {
+    if (!targetSector || !targetSector.symbols || targetSector.symbols.length === 0) {
       return res.status(404).json({ error: 'Sector not found' })
     }
 
     // Evaluate stocks
     const results = await Promise.all(
-      stocks.map(async (stock: any) => {
+      targetSector.symbols.map(async (symbol: string) => {
         try {
-          const data = await DataFetcher.fetchStockData(stock.symbol)
-          const piotroskiScore = PiotroskiEvaluator.calculate(data)
-          const valueScore = ValueEvaluator.calculate(data)
+          const data = await DataFetcher.fetchStockData(symbol)
+          const piotroskiScore = PiotroskiEvaluator.calculateFScore(data)
+          const valueScore = ValueEvaluator.calculateValueScore(data)
           return {
-            symbol: stock.symbol,
+            symbol,
             piotroskiScore,
             valueScore
           }
         } catch (err) {
           return {
-            symbol: stock.symbol,
+            symbol,
             piotroskiScore: 0,
             valueScore: 0
           }
@@ -68,14 +90,14 @@ app.post('/api/evaluate/sector', async (req, res) => {
       })
     )
 
-    res.json(results.sort((a, b) => b.piotroskiScore - a.piotroskiScore))
+    res.json(results.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore))
   } catch (error) {
     res.status(500).json({ error: 'Failed to evaluate sector' })
   }
 })
 
 // POST /api/evaluate/industry
-app.post('/api/evaluate/industry', async (req, res) => {
+app.post('/api/evaluate/industry', async (req: Request, res: Response) => {
   try {
     const { industry } = req.body
     if (!industry) {
@@ -83,27 +105,35 @@ app.post('/api/evaluate/industry', async (req, res) => {
     }
 
     const industries = await SectorBuilder.getIndustries()
-    const stocks = industries[industry] || []
+    
+    // Find the industry by comparing with the name
+    let targetIndustry: any = null
+    for (const [_, industryData] of Object.entries(industries)) {
+      if ((industryData as any).name === industry) {
+        targetIndustry = industryData
+        break
+      }
+    }
 
-    if (stocks.length === 0) {
+    if (!targetIndustry || !targetIndustry.symbols || targetIndustry.symbols.length === 0) {
       return res.status(404).json({ error: 'Industry not found' })
     }
 
     // Evaluate stocks
     const results = await Promise.all(
-      stocks.map(async (stock: any) => {
+      targetIndustry.symbols.map(async (symbol: string) => {
         try {
-          const data = await DataFetcher.fetchStockData(stock.symbol)
-          const piotroskiScore = PiotroskiEvaluator.calculate(data)
-          const valueScore = ValueEvaluator.calculate(data)
+          const data = await DataFetcher.fetchStockData(symbol)
+          const piotroskiScore = PiotroskiEvaluator.calculateFScore(data)
+          const valueScore = ValueEvaluator.calculateValueScore(data)
           return {
-            symbol: stock.symbol,
+            symbol,
             piotroskiScore,
             valueScore
           }
         } catch (err) {
           return {
-            symbol: stock.symbol,
+            symbol,
             piotroskiScore: 0,
             valueScore: 0
           }
@@ -111,14 +141,14 @@ app.post('/api/evaluate/industry', async (req, res) => {
       })
     )
 
-    res.json(results.sort((a, b) => b.piotroskiScore - a.piotroskiScore))
+    res.json(results.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore))
   } catch (error) {
     res.status(500).json({ error: 'Failed to evaluate industry' })
   }
 })
 
 // POST /api/evaluate/watchlist
-app.post('/api/evaluate/watchlist', async (req, res) => {
+app.post('/api/evaluate/watchlist', async (req: Request, res: Response) => {
   try {
     const { tickers } = req.body
     if (!Array.isArray(tickers) || tickers.length === 0) {
@@ -129,8 +159,8 @@ app.post('/api/evaluate/watchlist', async (req, res) => {
       tickers.map(async (symbol: string) => {
         try {
           const data = await DataFetcher.fetchStockData(symbol.toUpperCase())
-          const piotroskiScore = PiotroskiEvaluator.calculate(data)
-          const valueScore = ValueEvaluator.calculate(data)
+          const piotroskiScore = PiotroskiEvaluator.calculateFScore(data)
+          const valueScore = ValueEvaluator.calculateValueScore(data)
           return {
             symbol: symbol.toUpperCase(),
             piotroskiScore,
@@ -146,7 +176,7 @@ app.post('/api/evaluate/watchlist', async (req, res) => {
       })
     )
 
-    res.json(results.sort((a, b) => b.piotroskiScore - a.piotroskiScore))
+    res.json(results.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore))
   } catch (error) {
     res.status(500).json({ error: 'Failed to evaluate watchlist' })
   }
