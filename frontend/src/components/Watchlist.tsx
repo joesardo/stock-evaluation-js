@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react'
-import { api } from '../api'
-
-interface Stock {
-  symbol: string
-  name: string
-  piotroskiScore?: number
-  valueScore?: number
-}
+import { api, Stock } from '../api'
+import { ScoreIndicator } from './ScoreBar'
 
 export default function Watchlist() {
   const [ticker, setTicker] = useState('')
@@ -46,7 +40,7 @@ export default function Watchlist() {
       return
     }
 
-    const newStock: Stock = { symbol, name: symbol }
+    const newStock: Stock = { symbol, piotroskiScore: 0, valueScore: 0 }
     setWatchlist([...watchlist, newStock])
     setTicker('')
     setError('')
@@ -179,8 +173,8 @@ export default function Watchlist() {
               {results.map((stock) => (
                 <tr key={stock.symbol}>
                   <td><strong>{stock.symbol}</strong></td>
-                  <td>{stock.piotroskiScore ? stock.piotroskiScore.toFixed(1) : '-'}</td>
-                  <td>{stock.valueScore ? stock.valueScore.toFixed(1) : '-'}</td>
+                  <td>{stock.piotroskiScore ? <ScoreIndicator score={stock.piotroskiScore} max={9} /> : '-'}</td>
+                  <td>{stock.valueScore ? <ScoreIndicator score={stock.valueScore} max={100} /> : '-'}</td>
                 </tr>
               ))}
             </tbody>

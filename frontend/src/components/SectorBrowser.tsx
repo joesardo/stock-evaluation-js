@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../api'
+import { ScoreIndicator } from './ScoreBar'
 
 interface Sector {
   name: string
@@ -121,8 +122,8 @@ export default function SectorBrowser() {
                 .map((stock) => (
                   <tr key={stock.symbol}>
                     <td><strong>{stock.symbol}</strong></td>
-                    <td>{stock.piotroskiScore.toFixed(1)}</td>
-                    <td>{stock.valueScore.toFixed(1)}</td>
+                    <td><ScoreIndicator score={stock.piotroskiScore} max={9} /></td>
+                    <td><ScoreIndicator score={stock.valueScore} max={100} /></td>
                   </tr>
                 ))}
             </tbody>
