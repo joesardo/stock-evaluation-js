@@ -36,49 +36,67 @@ export class SectorBuilder {
     // Large Cap Tech
     'AAPL', 'MSFT', 'GOOGL', 'GOOG', 'META', 'NVDA', 'INTC', 'AMD', 'QCOM', 'AVGO', 'ASML', 'CRM', 'ADBE', 'NFLX', 'SHOP',
     // Mid Cap Tech & Software
-    'SNOW', 'CRWD', 'NET', 'DDOG', 'OKTA', 'WDAY', 'TWLO', 'VEEV', 'ZOOM', 'MSTR', 'DELL', 'HPQ',
+    'SNOW', 'CRWD', 'NET', 'DDOG', 'OKTA', 'WDAY', 'TWLO', 'VEEV', 'ZOOM', 'MSTR', 'DELL', 'HPQ', 'PAYC', 'PSTG', 'NOW', 'PALO', 'FTNT', 'CHKP', 'TENB', 'RPD',
     // Semiconductors & Chip
-    'MU', 'NXPI', 'MCHP', 'AMAT', 'LRCX', 'KLAC', 'MRVL', 'SQ', 'COIN', 'RIOT', 'MARA',
+    'MU', 'NXPI', 'MCHP', 'AMAT', 'LRCX', 'KLAC', 'MRVL', 'SQ', 'COIN', 'RIOT', 'MARA', 'SLAB', 'SMCI', 'CAVA', 'NVEC',
     // Large Cap Consumer & Automotive
-    'TSLA', 'AMZN', 'WMT', 'COST', 'MCD', 'HD', 'NKE', 'LULU', 'SBUX',
-    // Consumer Cyclical
-    'TJX', 'AZO', 'FIVE', 'ROST', 'ULTA', 'CBRL', 'SHAK', 'YUM', 'DPZ', 'CPRI', 'EAT', 'WING', 'QSR', 'F', 'GM', 'TM', 'HMC', 'RACE', 'NIO', 'LI', 'XPEV', 'RIVN', 'LCID', 'RH', 'LEG',
-    // Healthcare & Pharma
-    'JNJ', 'UNH', 'LLY', 'PFE', 'AZN', 'ABBV', 'TMO', 'AMGN', 'CVS', 'HUM', 'CI', 'GILD', 'IDXX', 'ATR',
-    // Biotech
-    'MRNA', 'BNTX', 'VRTX', 'CRSP', 'EDIT', 'SRPT', 'BEAM', 'IMNM', 'CGEN', 'ZLAB',
-    // Financial Services - Banks
+    'TSLA', 'AMZN', 'WMT', 'COST', 'MCD', 'HD', 'NKE', 'LULU', 'SBUX', 'LOW', 'BKNG', 'ORLY',
+    // Consumer Cyclical - Mid/Small Cap
+    'TJX', 'AZO', 'FIVE', 'ROST', 'ULTA', 'CBRL', 'SHAK', 'YUM', 'DPZ', 'CPRI', 'EAT', 'WING', 'QSR', 'F', 'GM', 'TM', 'HMC', 'RACE', 'NIO', 'LI', 'XPEV', 'RIVN', 'LCID', 'RH', 'LEG', 'BBOX', 'CENTA', 'CRUS', 'HOFT', 'SMPL',
+    // Healthcare & Pharma - Large & Mid Cap
+    'JNJ', 'UNH', 'LLY', 'PFE', 'AZN', 'ABBV', 'TMO', 'AMGN', 'CVS', 'HUM', 'CI', 'GILD', 'IDXX', 'ATR', 'VEEV', 'VCYT', 'ALNY', 'ALKS',
+    // Biotech - Mid & Small Cap
+    'MRNA', 'BNTX', 'VRTX', 'CRSP', 'EDIT', 'SRPT', 'BEAM', 'IMNM', 'CGEN', 'ZLAB', 'BCEL', 'HLMN', 'PGEN', 'TMDX',
+    // Financial Services - Banks - Large Cap
     'JPM', 'BAC', 'WFC', 'GS', 'MS', 'BLK', 'AXP', 'COF', 'C', 'PNC', 'USB', 'TFC', 'FITB', 'HBAN', 'KEY', 'ZION', 'EWBC', 'PACW', 'SVB', 'FRC',
+    // Financial Services - Banks - Mid/Small Cap
+    'WAFD', 'WTFC', 'CADE', 'FFIN', 'TFSL', 'BANR', 'CBSH', 'OTCB', 'INDB', 'CFR',
     // Financial Services - Insurance & Diversified
-    'BRK.B', 'AIG', 'ALL', 'AON', 'MMC', 'ICE', 'CBOE', 'NDAQ', 'SCHW', 'TD', 'IBKR', 'MUFG',
+    'BRK.B', 'AIG', 'ALL', 'AON', 'MMC', 'ICE', 'CBOE', 'NDAQ', 'SCHW', 'TD', 'IBKR', 'MUFG', 'PRU', 'HIG', 'UNM',
     // Consumer Defensive - Staples
-    'PG', 'KO', 'PEP', 'MO', 'PM', 'MNST', 'CPB', 'GIS', 'MDLZ', 'NSRGY', 'INGR', 'HLF', 'TGLS',
+    'PG', 'KO', 'PEP', 'MO', 'PM', 'MNST', 'CPB', 'GIS', 'MDLZ', 'NSRGY', 'INGR', 'HLF', 'TGLS', 'CRDA', 'LW', 'ADM',
     // Industrials - Aerospace & Defense
-    'BA', 'RTX', 'LMT', 'NOC', 'GD', 'HII', 'TDG', 'SPX', 'GE', 'RKLB', 'VSLR',
+    'BA', 'RTX', 'LMT', 'NOC', 'GD', 'HII', 'TDG', 'SPX', 'GE', 'RKLB', 'VSLR', 'AIR', 'AXON', 'SAIC',
     // Industrials - Manufacturing & Equipment
-    'CAT', 'CNH', 'AAON', 'AYI', 'BLDR', 'MMM', 'OTIS', 'CARR', 'HON', 'ITT', 'ROP', 'EMR',
+    'CAT', 'CNH', 'AAON', 'AYI', 'BLDR', 'MMM', 'OTIS', 'CARR', 'HON', 'ITT', 'ROP', 'EMR', 'DOV', 'PH', 'JCI', 'IR', 'HUBB', 'WSM',
     // Industrials - Transport & Logistics
-    'WM', 'RSG', 'CP', 'NSC', 'UNP', 'CSX', 'KSU', 'ALK', 'DAL', 'UAL', 'AAL', 'JBLU', 'LUV',
-    // Energy - Oil & Gas
+    'WM', 'RSG', 'CP', 'NSC', 'UNP', 'CSX', 'KSU', 'ALK', 'DAL', 'UAL', 'AAL', 'JBLU', 'LUV', 'MATX', 'XPO', 'KNX', 'LAD',
+    // Energy - Oil & Gas - Large Cap
     'XOM', 'CVX', 'COP', 'MPC', 'PSX', 'VLO', 'FANG', 'OXY', 'EOG', 'EQT', 'CMPR', 'PXD',
-    // Energy - Pipelines & Utilities
+    // Energy - Oil & Gas - Mid/Small Cap
+    'MRO', 'NOG', 'AR', 'MGY', 'PARR', 'CRK', 'PE', 'GILD', 'XROC', 'SLB',
+    // Energy - Pipelines & Utilities - Large Cap
     'OKE', 'KMI', 'EPD', 'PAA', 'AM', 'WEC', 'ES', 'DUK', 'SO', 'AEP', 'EXC', 'PEG', 'NEE', 'FE', 'CMS', 'AWK', 'NWN', 'UGI', 'SWX',
+    // Energy - Pipelines & Utilities - Mid/Small Cap
+    'OGE', 'EVRG', 'ALE', 'AVTR', 'ETR', 'ED', 'NTST', 'CWEN',
     // Renewables & Clean Energy
-    'ENPH', 'RUN', 'SEDG', 'PLUG', 'CLNE', 'ICLN',
-    // Real Estate - REITs
+    'ENPH', 'RUN', 'SEDG', 'PLUG', 'CLNE', 'ICLN', 'FSLR', 'JKS', 'CSIQ', 'RUN',
+    // Real Estate - REITs - Large Cap
     'SPG', 'KIM', 'MAC', 'PLD', 'EGP', 'STAG', 'VICI', 'EXR', 'PSA', 'CUBE', 'WELL', 'UMH', 'NHI', 'CTRE', 'AIV', 'AMT', 'O', 'ADC', 'REXR', 'IRM', 'LAMR',
-    // Materials - Metals & Mining
+    // Real Estate - REITs - Mid/Small Cap
+    'STOR', 'NETL', 'SKT', 'GOOD', 'TRNO', 'ELME', 'RLJ', 'PLYM', 'MICT', 'UVV',
+    // Materials - Metals & Mining - Large Cap
     'NEM', 'FCX', 'AA', 'SCCO', 'ALB', 'RIO', 'BHP', 'VALE', 'TECK', 'CLF', 'TX', 'AUY', 'GLD', 'SLV',
-    // Materials - Chemicals & Construction
+    // Materials - Metals & Mining - Mid/Small Cap
+    'JRVR', 'MTA', 'CDE', 'EXK', 'PAAS', 'AG', 'MAG', 'KL', 'IAG', 'GPL',
+    // Materials - Chemicals & Construction - Large Cap
     'LYB', 'APD', 'SHW', 'CTVA', 'CE', 'DD', 'ECL', 'EMN', 'IFF', 'PPG', 'MLM', 'LEG', 'UFPI', 'WMS', 'HUBB',
-    // Communication Services - Media & Streaming
-    'NFLX', 'META', 'ROKU', 'FUBO', 'SNAP', 'PINS', 'TTD', 'ATHM', 'VEON',
+    // Materials - Chemicals & Construction - Mid/Small Cap
+    'AXTA', 'WLK', 'SLVM', 'ADTN', 'CLDX', 'FUL', 'URG', 'AMRK', 'NSU', 'TATA',
+    // Communication Services - Media & Streaming - Large Cap
+    'NFLX', 'META', 'ROKU', 'FUBO', 'SNAP', 'PINS', 'TTD', 'ATHM', 'VEON', 'TMDM', 'FOXA', 'FOX',
     // Communication Services - Telecom
-    'VZ', 'T', 'TMUS', 'CHTR', 'CMCSA',
+    'VZ', 'T', 'TMUS', 'CHTR', 'CMCSA', 'LBRDA', 'LBRDK', 'BEL', 'SHEN',
     // Mid/Small Cap Diverse
-    'PENN', 'EBAY', 'UAA', 'ENBL', 'DECK', 'UPWK', 'DKNG', 'ABNB', 'ZM', 'NET', 'BILL',
-    // Additional coverage across sectors
-    'ANET', 'LPL', 'ENSG', 'HYLN', 'RDFN', 'EXPE', 'BOOKING', 'TRVG', 'TAP', 'STZ', 'BUD'
+    'PENN', 'EBAY', 'UAA', 'ENBL', 'DECK', 'UPWK', 'DKNG', 'ABNB', 'ZM', 'NET', 'BILL', 'FLIR', 'GEVO', 'APVO', 'ONEW', 'RAVN',
+    // Additional Tech/Software - Small Cap
+    'ANET', 'LPL', 'ENSG', 'HYLN', 'RDFN', 'EXPE', 'BOOKING', 'TRVG', 'TAP', 'STZ', 'BUD', 'GTLB', 'SWI', 'TTM', 'AVAV', 'GPRO',
+    // Additional Healthcare/Biotech
+    'ARQT', 'BLDP', 'NWLI', 'SMMT', 'DTLA', 'AZTA', 'CBRT', 'SELB', 'CURI', 'VERV',
+    // Additional Retail/Consumer
+    'CATO', 'DLTH', 'EXPR', 'OYST', 'GPS', 'KSS', 'M', 'AEO', 'SCHN', 'WRK',
+    // Additional Industrial
+    'TREX', 'ROKU', 'NBHC', 'XMTR', 'PLUG', 'ETRN', 'PNRG', 'ARWR', 'RRGB', 'SSNC'
   ];
 
   /**
