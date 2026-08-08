@@ -234,13 +234,13 @@ async function main() {
     }
   }
 
-  // Show summary if evaluating sector, watchlist, or top
-  if (sectorName || isWatchlist || args[0] === '--top') {
-    showSummary(results, args[0] === '--top' ? parseInt(args[1]) : undefined);
+  // Show summary if evaluating sector, watchlist, industry, or top
+  if (sectorName || industryName || isWatchlist || args[0] === '--top') {
+    showSummary(results, sectorName, industryName, isWatchlist, args[0] === '--top' ? parseInt(args[1]) : undefined);
   }
 }
 
-function showSummary(results: SummaryResult[], topN?: number) {
+function showSummary(results: SummaryResult[], sectorName?: string | null, industryName?: string | null, isWatchlist?: boolean, topN?: number) {
   if (results.length === 0) {
     console.log('No results to display');
     return;
@@ -253,7 +253,20 @@ function showSummary(results: SummaryResult[], topN?: number) {
   const displayed = topN ? sorted.slice(0, topN) : sorted;
 
   console.log('\n' + '═'.repeat(80));
-  console.log('📊 SUMMARY - Ranked by Quality & Value');
+  
+  // Build title based on evaluation type
+  let title = '📊 SUMMARY - Ranked by Quality & Value';
+  if (sectorName) {
+    title = `📊 SUMMARY - ${sectorName} Sector (${results.length} stocks)`;
+  } else if (industryName) {
+    title = `📊 SUMMARY - ${industryName} Industry (${results.length} stocks)`;
+  } else if (isWatchlist) {
+    title = `📊 SUMMARY - Your Watchlist (${results.length} stocks)`;
+  } else if (topN) {
+    title = `📊 SUMMARY - Top ${topN} Stocks (${results.length} total)`;
+  }
+  
+  console.log(title);
   console.log('═'.repeat(80));
   console.log(`\n    F-Score          Value`);
   console.log('');

@@ -101,54 +101,127 @@ npm run dev
 
 ---
 
-## Available Industries (80+ categories)
+## Available Industries (83 categories)
 
-Industries provide more granular analysis than sectors. Here's a sample:
+Industries provide more granular analysis than sectors. Here's the complete list organized by category:
 
-**Computing & IT:**
+### Technology & Computing
 - Semiconductors
+- Semiconductor Equipment & Materials
 - Software - Infrastructure
 - Software - Application
-- Consumer Electronics
 - Computer Hardware
-
-**Consumer:**
-- Auto Manufacturers
-- Restaurants
-- Discount Stores
-- Apparel Retail
-- Specialty Retail
-
-**Financial:**
-- Banks - Diversified
-- Capital Markets
 - Financial Data & Stock Exchanges
 
-**Healthcare:**
-- Drug Manufacturers - General
-- Health Information Services
-- Biotechnology
+### Consumer - Retail
+- Discount Stores
+- Specialty Retail
+- Apparel Retail
+- Footwear & Accessories
+- Home Improvement Retail
+- Luxury Goods
+- Furnishings, Fixtures & Appliances
 
-**Energy & Materials:**
+### Consumer - Restaurants & Food
+- Restaurants
+- Packaged Foods
+- Confectioners
+- Beverages - Brewers
+- Beverages - Non-Alcoholic
+- Tobacco
+
+### Consumer Electronics & Goods
+- Consumer Electronics
+- Household & Personal Products
+- Apparel Manufacturing
+
+### Automotive & Transportation
+- Auto Manufacturers
+- Auto Parts
+- Airlines
+- Railroads
+- Travel Services
+
+### Healthcare & Pharmaceuticals
+- Drug Manufacturers - General
+- Biotechnology
+- Healthcare Plans
+- Health Information Services
+- Medical Instruments & Supplies
+- Medical Care Facilities
+- Diagnostics & Research
+
+### Financial Services
+- Banks - Diversified
+- Banks - Regional
+- Capital Markets
+- Asset Management
+- Credit Services
+- Insurance - Diversified
+- Insurance - Property & Casualty
+- Insurance Brokers
+
+### Real Estate (REITs)
+- REIT - Diversified
+- REIT - Healthcare Facilities
+- REIT - Industrial
+- REIT - Residential
+- REIT - Retail
+- REIT - Specialty
+
+### Energy & Oil/Gas
 - Oil & Gas Integrated
+- Oil & Gas E&P (Exploration & Production)
+- Oil & Gas Midstream
+- Oil & Gas Refining & Marketing
+
+### Utilities & Energy
+- Utilities - Regulated Electric
+- Utilities - Regulated Gas
+- Utilities - Regulated Water
+- Solar
+
+### Materials & Mining
 - Specialty Chemicals
+- Chemicals
 - Steel
 - Copper
+- Aluminum
 - Gold
+- Other Industrial Metals & Mining
 
-**Communications:**
+### Industrials & Manufacturing
+- Aerospace & Defense
+- Conglomerates
+- Electrical Equipment & Parts
+- Building Materials
+- Building Products & Equipment
+- Farm & Heavy Construction Machinery
+- Specialty Industrial Machinery
+- Waste Management
+- Specialty Business Services
+
+### Agriculture & Resources
+- Agricultural Inputs
+- Lumber & Wood Production
+
+### Media & Entertainment
 - Internet Content & Information
 - Entertainment
-- Telecom Services
+- Broadcasting
+- Advertising Agencies
 
-**Real Estate:**
-- REIT - Office
-- REIT - Residential
-- REIT - Industrial
+### Internet & Retail
+- Internet Retail
 
-...and many more!
+### Other
+- Gambling
+- Resorts & Casinos
+- Unknown (Stocks that couldn't be classified)
 
-To see the full list, run:
+---
+
+To see the full list dynamically with stock counts, run:
 ```bash
 npm run dev
 ```
