@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
+import { api } from '../api'
 
 interface Industry {
   name: string
-  stocks: string[]
+  count: number
 }
 
 export default function IndustryBrowser() {
@@ -14,23 +15,21 @@ export default function IndustryBrowser() {
   const [results, setResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
 
-  // Load industries from cache
+  // Load industries from backend
   useEffect(() => {
     const loadIndustries = async () => {
       try {
         setLoading(true)
+        setError('')
 
-        // For demo, show placeholder industries
-        setIndustries([
-          { name: 'Semiconductors', stocks: ['NVDA', 'AMD', 'QCOM'] },
-          { name: 'Software - Application', stocks: ['MSFT', 'CRM', 'ADBE'] },
-          { name: 'Banks - Diversified', stocks: ['JPM', 'WFC', 'BAC'] },
-          { name: 'Auto Manufacturers', stocks: ['TSLA', 'F', 'GM'] },
-          { name: 'Drug Manufacturers - General', stocks: ['JNJ', 'PFE', 'ABBV'] },
-          { name: 'Restaurants', stocks: ['MCD', 'YUM', 'SBUX'] },
-        ])
+        const industryData = await api.getIndustries()
+        const industryList = Object.entries(industryData).map(([name, stocks]) => ({
+          name,
+          count: stocks.length
+        }))
+        setIndustries(industryList)
       } catch (err) {
-        setError('Failed to load industries')
+        setError('Failed to load industries. Make sure backend is running on port 3000.')
       } finally {
         setLoading(false)
       }
@@ -48,14 +47,8 @@ export default function IndustryBrowser() {
       setLoading(true)
       setError('')
 
-      const industry = industries.find(i => i.name === industryName)
-      setResults(
-        (industry?.stocks || []).map((symbol) => ({
-          symbol,
-          piotroskiScore: Math.random() * 9,
-          valueScore: Math.random() * 100,
-        }))
-      )
+      const stocks = await api.evaluateIndustry(industryName)
+      setResults(stocks)
       setShowResults(true)
     } catch (err) {
       setError('Failed to evaluate industry')
@@ -107,7 +100,7 @@ export default function IndustryBrowser() {
               >
                 <div className="card-title" style={{ fontSize: '0.95rem' }}>{industry.name}</div>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                  {industry.stocks.length} stocks
+                  {industry.count} stocks
                 </p>
               </button>
             ))}

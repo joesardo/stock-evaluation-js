@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
+import { api } from '../api'
 
 interface Sector {
   name: string
-  stocks: string[]
+  count: number
 }
 
 export default function SectorBrowser() {
@@ -13,22 +14,21 @@ export default function SectorBrowser() {
   const [results, setResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
 
-  // Load sectors from cache/sectors.json
+  // Load sectors from backend
   useEffect(() => {
     const loadSectors = async () => {
       try {
         setLoading(true)
+        setError('')
         
-        // For demo, show placeholder sectors
-        setSectors([
-          { name: 'Technology', stocks: ['AAPL', 'MSFT', 'GOOGL'] },
-          { name: 'Healthcare', stocks: ['JNJ', 'UNH', 'PFE'] },
-          { name: 'Banking', stocks: ['JPM', 'BAC', 'WFC'] },
-          { name: 'Retail', stocks: ['AMZN', 'WMT', 'TM'] },
-          { name: 'Energy', stocks: ['XOM', 'CVX', 'MPC'] },
-        ])
+        const sectorData = await api.getSectors()
+        const sectorList = Object.entries(sectorData).map(([name, stocks]) => ({
+          name,
+          count: stocks.length
+        }))
+        setSectors(sectorList)
       } catch (err) {
-        setError('Failed to load sectors')
+        setError('Failed to load sectors. Make sure backend is running on port 3000.')
       } finally {
         setLoading(false)
       }
@@ -42,15 +42,8 @@ export default function SectorBrowser() {
       setLoading(true)
       setError('')
 
-      // For demo, show placeholder results
-      const sector = sectors.find(s => s.name === sectorName)
-      setResults(
-        (sector?.stocks || []).map((symbol) => ({
-          symbol,
-          piotroskiScore: Math.random() * 9,
-          valueScore: Math.random() * 100,
-        }))
-      )
+      const stocks = await api.evaluateSector(sectorName)
+      setResults(stocks)
       setShowResults(true)
     } catch (err) {
       setError('Failed to evaluate sector')
@@ -91,7 +84,7 @@ export default function SectorBrowser() {
               >
                 <div className="card-title" style={{ fontSize: '1rem' }}>{sector.name}</div>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                  {sector.stocks.length} stocks
+                  {sector.count} stocks
                 </p>
               </button>
             ))}

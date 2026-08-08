@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { api } from '../api'
 
 interface Stock {
   symbol: string
@@ -69,11 +70,12 @@ export default function Watchlist() {
       setLoading(true)
       setError('')
 
-      // For now, just show placeholder results
-      setResults(watchlist)
+      const tickers = watchlist.map(s => s.symbol)
+      const stocks = await api.evaluateWatchlist(tickers)
+      setResults(stocks)
       setShowResults(true)
     } catch (err) {
-      setError('Failed to evaluate watchlist')
+      setError('Failed to evaluate watchlist. Make sure backend is running on port 3000.')
     } finally {
       setLoading(false)
     }
