@@ -40,17 +40,31 @@ async function main() {
     process.exit(0);
   }
 
+  if (args[0] === '--rebuild-industries') {
+    console.log('🔄 Rebuilding industry cache from Yahoo Finance...');
+    SectorBuilder.clearCache();
+    const industries = await SectorBuilder.getIndustries();
+    console.log('\n✅ Industries rebuilt! Available industries:');
+    Object.entries(industries).forEach(([name, data]) => {
+      console.log(`  - ${name} (${data.symbols.length} stocks)`);
+    });
+    process.exit(0);
+  }
+
   if (args.length === 0) {
     console.log('Stock Evaluation Tool - Piotroski F-Score Analysis\n');
     console.log('Usage: npm run dev -- SYMBOL [SYMBOL2] [SYMBOL3] ...');
     console.log('       npm run dev -- SECTOR_NAME');
+    console.log('       npm run dev -- --industry INDUSTRY_NAME');
     console.log('       npm run dev -- --watchlist');
     console.log('       npm run dev -- --top N');
-    console.log('       npm run dev -- --rebuild-sectors\n');
+    console.log('       npm run dev -- --rebuild-sectors');
+    console.log('       npm run dev -- --rebuild-industries\n');
     console.log('Examples:');
     console.log('  npm run dev -- AAPL');
     console.log('  npm run dev -- AAPL MSFT GOOGL');
     console.log('  npm run dev -- Technology');
+    console.log('  npm run dev -- --industry Semiconductors');
     console.log('  npm run dev -- --watchlist');
     console.log('  npm run dev -- --top 10\n');
     console.log('Available sectors:');
@@ -64,8 +78,17 @@ async function main() {
         })
         .join('\n');
       console.log(sectorList);
+      
+      console.log('\nAvailable industries:');
+      const industries = await SectorBuilder.getIndustries();
+      const industryList = Object.entries(industries)
+        .map(([key, data]: [string, any]) => {
+          return `  ${key.padEnd(35)} (${data.symbols.length} stocks)`;
+        })
+        .join('\n');
+      console.log(industryList);
     } catch (error) {
-      console.log('  (Could not fetch sectors - check internet connection)');
+      console.log('  (Could not fetch sectors/industries - check internet connection)');
     }
     
     process.exit(1);
@@ -74,6 +97,7 @@ async function main() {
   // Determine symbols to evaluate
   let symbols: string[] = [];
   let sectorName: string | null = null;
+  let industryName: string | null = null;
   let isWatchlist = false;
 
   if (args[0] === '--watchlist') {
@@ -86,6 +110,29 @@ async function main() {
     symbols = watchlistTickers;
     isWatchlist = true;
     console.log(`\n👀 Evaluating your watchlist (${symbols.length} tickers)\n`);
+  } else if (args[0] === '--industry') {
+    if (args.length < 2) {
+      console.error('❌ --industry requires an industry name');
+      process.exit(1);
+    }
+    
+    const industries = await SectorBuilder.getIndustries();
+    const industryKey = Object.keys(industries).find(
+      key => key.toLowerCase() === args.slice(1).join(' ').toLowerCase()
+    );
+    
+    if (!industryKey) {
+      console.error(`❌ Industry not found: ${args.slice(1).join(' ')}`);
+      console.log('\nAvailable industries:');
+      Object.keys(industries).forEach(ind => {
+        console.log(`  - ${ind}`);
+      });
+      process.exit(1);
+    }
+    
+    symbols = industries[industryKey].symbols;
+    industryName = industryKey;
+    console.log(`\n🎯 Evaluating ${industryKey} industry (${symbols.length} stocks)\n`);
   } else if (args[0] === '--top') {
     if (args.length < 2 || isNaN(parseInt(args[1]))) {
       console.error('❌ --top requires a number');

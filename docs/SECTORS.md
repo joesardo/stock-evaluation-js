@@ -1,30 +1,50 @@
-# Available Stock Sectors
+# Available Stock Sectors & Industries
 
-This guide lists all available sectors you can use to evaluate groups of stocks at once. Sectors are **dynamically pulled from Yahoo Finance** based on their official sector classifications.
+This guide lists all available sectors and industries you can use to evaluate groups of stocks at once. Both **sectors and industries are dynamically pulled from Yahoo Finance** based on their official classifications.
+
+## Two Classification Systems
+
+The tool supports two levels of classification granularity:
+
+### Sectors (12 main categories)
+Broad categories matching Yahoo Finance's main sector classification. Use these for high-level analysis.
+
+### Industries (80+ granular categories)
+Much more detailed classification system. Use these for focused analysis within specific industries.
 
 ## Usage
 
-Run evaluations for an entire sector with:
-
+### Evaluate by Sector:
 ```bash
 npm run dev -- SECTOR_NAME
 ```
 
-Replace `SECTOR_NAME` with any of the sector names listed below (e.g., `Tech`, `Healthcare`, `Energy`).
+### Evaluate by Industry:
+```bash
+npm run dev -- --industry "INDUSTRY_NAME"
+```
 
-## Rebuilding Sectors
+Replace `SECTOR_NAME` or `INDUSTRY_NAME` with any names listed below.
 
-To update sectors with the latest data from Yahoo Finance, run:
+**Note:** Industry names may contain spaces. Quote them if needed or use the names exactly as shown.
 
+## Rebuilding Data
+
+### Rebuild Sectors:
 ```bash
 npm run dev -- --rebuild-sectors
 ```
 
-This will fetch sector data for 200+ stocks and cache the results.
+### Rebuild Industries:
+```bash
+npm run dev -- --rebuild-industries
+```
+
+Both commands fetch data for 200+ stocks and cache the results for performance.
 
 ---
 
-## Available Sectors
+## Available Sectors (12 total)
 
 | Sector | Stock Count | Examples |
 |--------|-------------|----------|
@@ -52,6 +72,13 @@ npm run dev -- Healthcare
 npm run dev -- Energy
 ```
 
+### Evaluate a single industry (more granular):
+```bash
+npm run dev -- --industry Semiconductors
+npm run dev -- --industry "Software - Application"
+npm run dev -- --industry "Auto Manufacturers"
+```
+
 ### Evaluate individual stocks:
 ```bash
 npm run dev -- AAPL MSFT GOOGL
@@ -74,11 +101,66 @@ npm run dev
 
 ---
 
+## Available Industries (80+ categories)
+
+Industries provide more granular analysis than sectors. Here's a sample:
+
+**Computing & IT:**
+- Semiconductors
+- Software - Infrastructure
+- Software - Application
+- Consumer Electronics
+- Computer Hardware
+
+**Consumer:**
+- Auto Manufacturers
+- Restaurants
+- Discount Stores
+- Apparel Retail
+- Specialty Retail
+
+**Financial:**
+- Banks - Diversified
+- Capital Markets
+- Financial Data & Stock Exchanges
+
+**Healthcare:**
+- Drug Manufacturers - General
+- Health Information Services
+- Biotechnology
+
+**Energy & Materials:**
+- Oil & Gas Integrated
+- Specialty Chemicals
+- Steel
+- Copper
+- Gold
+
+**Communications:**
+- Internet Content & Information
+- Entertainment
+- Telecom Services
+
+**Real Estate:**
+- REIT - Office
+- REIT - Residential
+- REIT - Industrial
+
+...and many more!
+
+To see the full list, run:
+```bash
+npm run dev
+```
+
+---
+
 ## Notes
 
-- **Real Yahoo Finance Data:** Sectors are derived directly from Yahoo Finance's official sector classifications, not manually crafted categories
-- **Dynamic Updates:** Run `--rebuild-sectors` periodically to keep sector data current
-- **Overlapping Stocks:** Some stocks may appear in multiple sectors depending on their primary Yahoo Finance classification
-- **Case-Insensitive:** `npm run dev -- tech`, `npm run dev -- TECH`, and `npm run dev -- Tech` all work the same way
+- **Real Yahoo Finance Data:** Both sectors and industries derive directly from Yahoo Finance's official classifications, not manually crafted categories
+- **Dynamic Updates:** Run `--rebuild-sectors` or `--rebuild-industries` periodically to keep data current
+- **Industry Granularity:** 80+ industries vs 12 sectors - choose based on your analysis needs
+- **Overlapping Stocks:** Stocks appear in exactly one sector/industry per Yahoo Finance classification
+- **Case-Insensitive:** Sector names are case-insensitive (`npm run dev -- tech` works)
 
 

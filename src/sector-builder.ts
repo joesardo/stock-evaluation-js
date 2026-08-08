@@ -8,8 +8,16 @@ interface SectorData {
   };
 }
 
+interface IndustryData {
+  [industry: string]: {
+    name: string;
+    symbols: string[];
+  };
+}
+
 interface SectorCache {
   sectors: SectorData;
+  industries?: IndustryData;
 }
 
 /**
@@ -105,10 +113,31 @@ export class SectorBuilder {
     console.log('🔄 Building sector watchlists from Yahoo Finance...');
     const sectors = await this.buildSectors();
     
-    // Save cache
-    this.saveCache(sectors);
+    // Save cache (will be merged with industries if also built)
+    this.saveCache(sectors, undefined);
     
     return sectors;
+  }
+
+  /**
+   * Get industries from cache or build new industries
+   */
+  static async getIndustries(): Promise<IndustryData> {
+    // Check cache first
+    const cached = this.loadCache();
+    if (cached?.industries) {
+      console.log('📦 Using cached industries');
+      return cached.industries;
+    }
+
+    console.log('🔄 Building industry watchlists from Yahoo Finance...');
+    const industries = await this.buildIndustries();
+    
+    // Save cache
+    const currentSectors = cached?.sectors || {};
+    this.saveCache(currentSectors, industries);
+    
+    return industries;
   }
 
   /**
@@ -173,6 +202,62 @@ export class SectorBuilder {
   }
 
   /**
+   * Build industries by fetching data from Yahoo Finance
+   * Groups stocks by their industry classification (more granular than sectors)
+   */
+  private static async buildIndustries(): Promise<IndustryData> {
+    const yf = require('yahoo-finance2').default;
+    const yfinance = new yf({ suppressNotices: ['yahooSurvey'] });
+
+    const industries: IndustryData = {};
+    let successCount = 0;
+    let failureCount = 0;
+
+    console.log(`Fetching industry data for ${this.COMPREHENSIVE_STOCKS.length} stocks from Yahoo Finance...\n`);
+
+    for (const symbol of this.COMPREHENSIVE_STOCKS) {
+      try {
+        // Fetch quote summary with industry info
+        const summary = await yfinance.quoteSummary(symbol, {
+          modules: ['assetProfile']
+        });
+
+        const yahooIndustry = summary?.assetProfile?.industry || 'Unknown';
+        
+        // Use industry name as-is from Yahoo Finance
+        const categoryKey = yahooIndustry;
+
+        if (!industries[categoryKey]) {
+          industries[categoryKey] = {
+            name: categoryKey,
+            symbols: []
+          };
+        }
+
+        if (!industries[categoryKey].symbols.includes(symbol)) {
+          industries[categoryKey].symbols.push(symbol);
+        }
+
+        console.log(`  ✓ ${symbol} → ${yahooIndustry}`);
+        successCount++;
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        console.log(`  ✗ ${symbol} → Failed (${errorMsg})`);
+        failureCount++;
+      }
+    }
+
+    console.log(`\n📊 Results: ${successCount} successful, ${failureCount} failed\n`);
+
+    // Sort symbols within each industry
+    Object.values(industries).forEach(industry => {
+      industry.symbols.sort();
+    });
+
+    return industries;
+  }
+
+  /**
    * Load sectors from cache if it exists
    */
   private static loadCache(): SectorCache | null {
@@ -189,9 +274,9 @@ export class SectorBuilder {
   }
 
   /**
-   * Save sectors to cache
+   * Save sectors and/or industries to cache
    */
-  private static saveCache(sectors: SectorData): void {
+  private static saveCache(sectors: SectorData, industries?: IndustryData): void {
     try {
       const cacheDir = path.dirname(this.CACHE_PATH);
       if (!fs.existsSync(cacheDir)) {
@@ -202,8 +287,12 @@ export class SectorBuilder {
         sectors
       };
 
+      if (industries) {
+        cache.industries = industries;
+      }
+
       fs.writeFileSync(this.CACHE_PATH, JSON.stringify(cache, null, 2));
-      console.log('💾 Sectors cached for 24 hours');
+      console.log('💾 Data cached for future use');
     } catch (error) {
       console.error('Warning: Could not save cache:', error);
     }
