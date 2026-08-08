@@ -6,46 +6,42 @@ dotenv.config();
 
 export class DataFetcher {
   /**
-   * Fetch stock data - tries yfinance first, falls back to Alpha Vantage
+   * Fetch stock data from Yahoo Finance
    */
   static async fetchStockData(symbol: string): Promise<StockData> {
-    // Try yfinance first (no API key, no rate limits)
     try {
-      console.log(`  → Fetching from yfinance...`);
       const yfinanceFetcher = new YFinanceDataFetcher();
       return await yfinanceFetcher.fetchStockData(symbol);
-    } catch (yfinanceError) {
-      console.log(`  ⚠️  yfinance failed: ${yfinanceError instanceof Error ? yfinanceError.message : String(yfinanceError)}`);
-      
-      // Fall back to Alpha Vantage
-      const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
-      if (!apiKey || apiKey === 'demo') {
-        throw new Error(
-          'Both data sources failed. yfinance error, and ALPHA_VANTAGE_API_KEY not configured. ' +
-          'Please add your Alpha Vantage API key to .env file (get free key at https://www.alphavantage.co/)'
-        );
-      }
-
-      try {
-        console.log(`  → Falling back to Alpha Vantage...`);
-        const fetcher = new AlphaVantageDataFetcher(apiKey);
-        const fundamentals = await fetcher.fetchFundamentals(symbol);
-        const latestPrice = await fetcher.fetchLatestPrice(symbol).catch(() => 0);
-        return await fetcher.parseStockData(symbol, fundamentals, latestPrice);
-      } catch (alphaError) {
-        throw new Error(
-          `Failed with both data sources - yfinance: ${yfinanceError instanceof Error ? yfinanceError.message : String(yfinanceError)}, ` +
-          `Alpha Vantage: ${alphaError instanceof Error ? alphaError.message : String(alphaError)}`
-        );
-      }
+    } catch (error) {
+      throw new Error(
+        `Failed to fetch data for ${symbol}: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
-   * Fetch multiple stocks
+   * Fetch multiple stocks with rate limiting to avoid throttling
    */
   static async fetchMultipleStocks(symbols: string[]): Promise<StockData[]> {
-    return Promise.all(symbols.map(s => this.fetchStockData(s)));
+    const results: StockData[] = [];
+    const delayMs = 500; // 500ms delay between requests to avoid rate limiting
+    
+    for (let i = 0; i < symbols.length; i++) {
+      try {
+        const data = await this.fetchStockData(symbols[i]);
+        results.push(data);
+      } catch (error) {
+        console.error(`Failed to fetch ${symbols[i]}: ${error instanceof Error ? error.message : String(error)}`);
+        // Continue with next symbol instead of failing entire batch
+      }
+      
+      // Add delay between requests (except after last one)
+      if (i < symbols.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+    
+    return results;
   }
 
   /**
@@ -55,9 +51,7 @@ export class DataFetcher {
     // Basic validation: 1-5 uppercase letters
     return /^[A-Z]{1,5}$/.test(symbol.toUpperCase());
   }
-}
-
-/**
+}/**
  * Example: Alpha Vantage integration
  * Requires API key from https://www.alphavantage.co/
  */
@@ -197,8 +191,25 @@ export class AlphaVantageDataFetcher {
  * Primary data source - no API key required, unlimited requests
  */
 export class YFinanceDataFetcher {
+  private static lastRequestTime = 0;
+  private static readonly MIN_DELAY_MS = 250; // 250ms between requests
+  
+  private static async throttle() {
+    const now = Date.now();
+    const timeSinceLastRequest = now - YFinanceDataFetcher.lastRequestTime;
+    if (timeSinceLastRequest < YFinanceDataFetcher.MIN_DELAY_MS) {
+      await new Promise(resolve => 
+        setTimeout(resolve, YFinanceDataFetcher.MIN_DELAY_MS - timeSinceLastRequest)
+      );
+    }
+    YFinanceDataFetcher.lastRequestTime = Date.now();
+  }
+  
   async fetchStockData(symbol: string): Promise<StockData> {
     try {
+      // Apply rate limiting
+      await YFinanceDataFetcher.throttle();
+      
       // Import yahoo-finance2 - v11+ requires instantiation
       const YahooFinance = require('yahoo-finance2').default;
       const yf = new YahooFinance({ suppressNotices: ['yahooSurvey'] });

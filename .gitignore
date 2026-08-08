@@ -14,5 +14,4 @@ dist/
 coverage/
 .nyc_output/
 stock-data.db
-.cache/
 watchlist.json
