@@ -1,29 +1,17 @@
 # Stock Evaluation Tool
 
-A lightweight, free stock evaluation script for analyzing publicly traded companies. No paid APIs or AI required—just solid financial metrics and analysis.
+A lightweight, free stock evaluation application with CLI and web UI. Analyze publicly traded companies using solid financial metrics—no paid APIs required.
 
 ## Features
 
-- **Free Data Sources**: Uses yfinance (Yahoo Finance) - no API key required, unlimited requests
-- **Backup API**: Alpha Vantage fallback for resilience (25 requests/day free tier)
-- **Sector Screening**: Evaluate all stocks in a sector at once (tech, finance, healthcare, etc.)
-- **Top Stocks Finder**: Batch evaluate 100+ stocks across all sectors to find top performers
-- **Multi-factor Analysis**: Evaluates stocks based on:
-  - Price-to-Earnings (P/E) Ratio
-  - Price-to-Book (P/B) Ratio
-  - Dividend Yield
-  - Debt-to-Equity Ratio
-  - Current Ratio (Liquidity)
-  - ROE (Return on Equity)
-  - Profit Margin
-  - Earnings Growth YoY
-  - Revenue Growth YoY
-  - Price Position in 52-Week Range
-  
-- **Customizable Scoring**: Configure weights and thresholds for your investment criteria
-- **CLI Interface**: Simple command-line tool to quickly evaluate any stock
-- **Ranked Results**: View sector/top results sorted by score with visual bars
-- **Clear Output**: Get a comprehensive score with breakdown of each metric
+- **Free Data Sources**: Uses Yahoo Finance (yfinance) for stock data - no API key required
+- **TradingView Stock Lists**: 5000+ verified stocks organized by 20 TradingView sectors
+- **Interactive Web UI**: Beautiful React interface for browsing sectors, industries, and watchlists
+- **Piotroski F-Score Analysis**: Professional fundamental quality scoring
+- **Value Score**: Price-to-book and dividend-adjusted valuation metrics
+- **Sector & Industry Screening**: Evaluate all stocks in a sector or industry
+- **Watchlist Management**: Save and track your favorite stocks
+- **CLI & Web Interface**: Use the command-line tool or open the web UI (Vite + React)
 
 ## Installation
 
@@ -36,70 +24,66 @@ cd stock-evaluation-js
 npm install
 ```
 
-## Usage
+## Quick Start
 
-### Evaluate individual stocks
+### Web UI (Recommended)
 
 ```bash
+npm run dev
+```
+
+This starts:
+- **Frontend**: React UI on http://localhost:5175
+- **Backend**: API server on http://localhost:3000
+
+The web interface provides:
+- 🌍 Sector Browser - Browse all 20 sectors with sortable stock lists
+- 🏭 Industry Browser - Explore 80+ industries  
+- 📋 Watchlist - Manage your personal stock watchlist
+- 📊 Score Details - View Piotroski F-Score and Value Score breakdowns
+
+### CLI (Command Line)
+
+```bash
+# Evaluate individual stocks
 npm run dev -- AAPL
 npm run dev -- MSFT GOOGL TSLA
-```
 
-### Screen by sector
+# Screen by sector
+npm run dev -- "Electronic Technology"
+npm run dev -- "Healthcare"
 
-Evaluate all stocks in a specific sector and get ranked results:
+# Screen by industry
+npm run dev -- --industry "Software - Application"
 
-```bash
-npm run dev -- Technology
-npm run dev -- Financials
-npm run dev -- Healthcare
-```
+# View watchlist results
+npm run dev -- --watchlist
 
-Available sectors: Technology, Communication Services, Consumer Cyclical, Consumer Defensive, Energy, Financial Services, Healthcare, Industrials, Basic Materials, Real Estate, Utilities
-
-### Find top performers
-
-Batch evaluate 100+ stocks across all sectors to find the top N performers:
-
-```bash
+# Find top performers
 npm run dev -- --top 10
-npm run dev -- --top 20
 ```
 
-### Example: Technology Sector Results
-
-```
-🎯 Evaluating Technology sector (15 stocks)
-
-[Detailed evaluation for each stock...]
-
-════════════════════════════════════════════════════════════════════════════════
-📊 SUMMARY - Ranked by Score
-════════════════════════════════════════════════════════════════════════════════
-
-1   QCOM   ████████░░ 76/100  BUY
-2   META   ████████░░ 75/100  BUY
-3   MSFT   ███████░░░ 73/100  BUY
-4   GOOGL  ███████░░░ 70/100  BUY
-5   NVDA   ███████░░░ 67/100  BUY
-...
-
-📈 Breakdown: 9 BUY | 4 HOLD | 2 SELL (out of 15 evaluated)
-
-💡 Highest: QCOM (76/100)
-   Lowest:  INTC (34/100)
-```
-
-### Customize evaluation criteria
-
-Edit `config/evaluation-criteria.json` to adjust weights and thresholds for your needs.
-
-### Build for production
-
-```bash
-npm run build
-node dist/index.js AAPL
-```
+Available sectors (20 TradingView sectors):
+- Electronic Technology
+- Technology Services
+- Finance
+- Health Technology
+- Retail Trade
+- Producer Manufacturing
+- Energy Minerals
+- Consumer Non-Durables
+- Communications
+- Utilities
+- Consumer Durables
+- Non-Energy Minerals
+- Consumer Services
+- Industrial Services
+- Transportation
+- Commercial Services
+- Process Industries
+- Health Services
+- Distribution Services
+- Miscellaneous
 
 ## Configuration
 
@@ -136,78 +120,100 @@ The evaluation criteria are defined in `config/evaluation-criteria.json`. Each m
 
 ## Data Sources
 
-**Primary**: [yfinance (Yahoo Finance)](https://finance.yahoo.com/)
-- No API key required
-- Unlimited requests (no rate limits)
-- Real-time quotes and fundamentals
-- 52-week price ranges
+**Stock Lists**: [TradingView Scanner API](https://www.tradingview.com/markets/stocks-usa/sectorandindustry-sector/)
+- 20 TradingView sectors
+- 5000+ verified US stocks
+- Pre-sorted by market cap
+- Updated via `node sectors-fetch.js`
 
-**Fallback**: [Alpha Vantage Free API](https://www.alphavantage.co/)
-- Used if yfinance fails
-- Free tier: 25 requests/day
-- Stock prices and basic fundamentals
+**Stock Fundamentals**: [Yahoo Finance (yfinance)](https://finance.yahoo.com/)
+- Piotroski F-Score components
+- Price-to-book ratio
+- Dividend yields
+- Company profiles
+- Industry classification
 
-The tool automatically tries yfinance first, then falls back to Alpha Vantage if needed.
+## Updating Stock Lists
 
-## Example Output
+When you want to refresh the list of stocks from TradingView:
 
+```bash
+node sectors-fetch.js
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 Stock Evaluation Report: AAPL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Company: Apple Inc.
-Current Price: $185.25
-Market Cap: $2.9T
-
-Metric Scores:
-├─ P/E Ratio (20.5): ⭐⭐⭐⭐ (4.0/5.0) - Weight: 20%
-├─ Dividend Yield (0.42%): ⭐⭐ (2.0/5.0) - Weight: 15%
-├─ Debt-to-Equity (1.2): ⭐⭐⭐ (3.0/5.0) - Weight: 15%
-├─ Current Ratio (1.05): ⭐⭐⭐⭐ (4.0/5.0) - Weight: 10%
-└─ ROE (165.4%): ⭐⭐⭐⭐⭐ (5.0/5.0) - Weight: 20%
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Overall Score: 76/100
-Recommendation: BUY ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+This fetches all 5000+ verified stocks from TradingView's 20 sectors and saves them to `all-stocks-by-sector.json`. The app loads this data instantly on startup—no rebuild process needed.
 
 ## Project Structure
 
 ```
 stock-evaluation-js/
 ├── src/
-│   ├── index.ts              # CLI entry point (handles --sector, --top flags)
-│   ├── evaluator.ts          # Core scoring engine
-│   ├── data-fetcher.ts       # yfinance + Alpha Vantage data retrieval
-│   ├── calculator.ts         # Financial metric calculations
+│   ├── index.ts              # CLI entry point
+│   ├── api.ts                # Express REST API
+│   ├── calculator.ts         # Piotroski F-Score & Value Score
+│   ├── sector-builder.ts     # Load sectors from TradingView JSON
+│   ├── piotroski-evaluator.ts # F-Score calculation
+│   ├── value-evaluator.ts    # Value score calculation
+│   ├── data-fetcher.ts       # Yahoo Finance data retrieval
+│   ├── watchlist-manager.ts  # Watchlist CRUD
 │   └── types.ts              # TypeScript interfaces
+├── frontend/                 # React UI (Vite)
+│   ├── src/
+│   │   ├── App.tsx
+│   │   ├── pages/
+│   │   │   ├── SectorBrowser.tsx
+│   │   │   ├── IndustryBrowser.tsx
+│   │   │   ├── Watchlist.tsx
+│   │   │   └── ScoreBar.tsx
+│   │   └── main.tsx
+│   └── vite.config.ts
 ├── config/
-│   ├── evaluation-criteria.json  # Scoring configuration
-│   └── watchlists.json          # Sector-based stock watchlists
-├── dist/                     # Compiled JavaScript (generated)
+│   └── evaluation-criteria.json  # Scoring thresholds
+├── cache/
+│   └── (cache files generated at runtime)
+├── all-stocks-by-sector.json    # TradingView stock data (generated)
+├── sectors-fetch.js             # TradingView data fetcher
 ├── package.json
 ├── tsconfig.json
-├── .env.example              # Environment variables template (Alpha Vantage key)
 └── README.md
 ```
 
-## Watchlists
+## Scoring System
 
-Sector watchlists are defined in `config/watchlists.json` and include 150+ stocks across 10 sectors:
-- **Technology**: AAPL, MSFT, GOOGL, META, NVDA, TSLA, etc.
-- **Financials**: JPM, BAC, WFC, GS, MS, BLK, etc.
-- **Healthcare**: JNJ, UNH, LLY, PFE, AZN, etc.
-- **Industrials**: BA, GE, MMM, HON, CAT, etc.
-- **Consumer**: AMZN, WMT, MCD, NKE, SBUX, etc.
-- **Energy**: XOM, CVX, COP, MPC, PSX, etc.
-- **Telecom**: VZ, T, TMUS, CHTR, CMCSA, etc.
-- **Utilities**: NEE, DUK, SO, AEP, ES, etc.
-- **Real Estate**: SPG, PLD, AWO, EXR, PSA, etc.
-- **Materials**: NEM, FCX, AA, SCCO, TX, etc.
+### Piotroski F-Score (Quality Score: 0-100)
 
-Add or customize watchlists by editing `config/watchlists.json`.
+Professional fundamental quality metric based on:
+- Operating Cash Flow
+- Net Income
+- Asset Quality (CapEx vs Depreciation)
+- Liquidity Trends (Current Ratio)
+- Leverage Trends (Debt changes)
+- Efficiency (ROA, Asset Turnover)
+
+**Interpretation:**
+- 90-100: Excellent financial health
+- 70-89: Good fundamentals
+- 50-69: Average quality
+- 30-49: Concerning metrics
+- 0-29: Poor financial position
+
+### Value Score (0-100)
+
+Investment value assessment using:
+- Price-to-Book Ratio
+- Dividend Yield
+- Market Cap positioning
+
+**Interpretation:**
+- 90-100: Excellent value
+- 70-89: Good value
+- 50-69: Fair value
+- 30-49: Expensive
+- 0-29: Very overvalued
+
+## Configuration
+
+Edit `config/evaluation-criteria.json` to customize scoring thresholds.
 
 ## Development
 
@@ -215,18 +221,25 @@ Add or customize watchlists by editing `config/watchlists.json`.
 # Install dependencies
 npm install
 
-# Run TypeScript compiler in watch mode
+# Start dev server (frontend + backend)
+npm run dev
+
+# Frontend only (Vite, port 5175)
+cd frontend && npm run dev
+
+# Backend only (Express, port 3000)
+npm run server
+
+# Build for production
 npm run build
-
-# Run the tool in development mode
-npm run dev -- AAPL
-
-# Check for TypeScript errors
-npm run lint
-
-# Clean build artifacts
-npm run clean
 ```
+
+## Browser Support
+
+The web UI requires a modern browser with ES2020+ support:
+- Chrome/Edge 91+
+- Firefox 89+
+- Safari 14+
 
 ## Contributing
 
@@ -238,22 +251,21 @@ Feel free to submit issues or PRs to:
 
 ## Limitations
 
-- Free API rate limits apply (typically 5-500 requests/month depending on service)
-- Some financial metrics may not be available for all stocks (startups, delisted companies)
-- Historical data availability varies by source
-- No real-time data (delayed by 15-20 minutes typically)
+- Yahoo Finance data may be delayed by 15-20 minutes
+- Some stocks may fail to fetch (delisted, ticker changes, data gaps)
+- TradingView scanner updates periodically (run `node sectors-fetch.js` to refresh)
+- Web UI requires modern browser
 
 ## Future Enhancements
 
-- [ ] Technical indicator analysis (MA, RSI, MACD)
-- [ ] Comparative analysis within sectors
-- [ ] Portfolio analysis and optimization
+- [ ] Export watchlist to CSV/JSON
+- [ ] Portfolio analysis and performance tracking
 - [ ] Backtesting historical recommendations
-- [ ] Database caching to reduce API calls
-- [ ] Web dashboard for visualization
-- [ ] Custom watchlist support
-- [ ] Save/load evaluation results
-- [ ] Export to CSV/JSON
+- [ ] Advanced filtering (market cap ranges, sector comparisons)
+- [ ] Email alerts for watchlist stocks
+- [ ] User accounts and cloud sync
+- [ ] Technical analysis indicators
+- [ ] Mobile app
 
 ## License
 

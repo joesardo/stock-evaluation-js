@@ -30,13 +30,14 @@ async function main() {
 
   // Handle special flags
   if (args[0] === '--rebuild' || args[0] === '--rebuild-all') {
-    SectorBuilder.clearCache();
-    const { sectors, industries } = await SectorBuilder.rebuildAll();
-    console.log('\n✅ Sectors rebuilt! Available sectors:');
+    console.log('🔄 Rebuilding industries from Yahoo Finance...');
+    const industries = await SectorBuilder.rebuildIndustries();
+    const sectors = await SectorBuilder.getSectors();
+    console.log('\n✅ Sectors (from TradingView JSON):');
     Object.entries(sectors).forEach(([name, data]) => {
       console.log(`  - ${name} (${data.symbols.length} stocks)`);
     });
-    console.log('\n✅ Industries rebuilt! Available industries:');
+    console.log('\n✅ Industries (from Yahoo Finance):');
     Object.entries(industries).forEach(([name, data]) => {
       console.log(`  - ${name} (${data.symbols.length} stocks)`);
     });
@@ -44,11 +45,9 @@ async function main() {
   }
 
   if (args[0] === '--rebuild-sectors') {
-    console.log('⚠️  Note: Use "npm run dev -- --rebuild" to update both sectors AND industries together');
-    console.log('🔄 Rebuilding sector cache from Yahoo Finance...');
-    SectorBuilder.clearCache();
+    console.log('⚠️  Sectors are loaded directly from TradingView JSON. No rebuild needed.');
     const sectors = await SectorBuilder.getSectors();
-    console.log('\n✅ Sectors rebuilt! Available sectors:');
+    console.log('\n✅ Available sectors:');
     Object.entries(sectors).forEach(([name, data]) => {
       console.log(`  - ${name} (${data.symbols.length} stocks)`);
     });
@@ -56,10 +55,8 @@ async function main() {
   }
 
   if (args[0] === '--rebuild-industries') {
-    console.log('⚠️  Note: Use "npm run dev -- --rebuild" to update both sectors AND industries together');
-    console.log('🔄 Rebuilding industry cache from Yahoo Finance...');
-    SectorBuilder.clearCache();
-    const industries = await SectorBuilder.getIndustries();
+    console.log('🔄 Rebuilding industry classification from Yahoo Finance...');
+    const industries = await SectorBuilder.rebuildIndustries();
     console.log('\n✅ Industries rebuilt! Available industries:');
     Object.entries(industries).forEach(([name, data]) => {
       console.log(`  - ${name} (${data.symbols.length} stocks)`);
@@ -74,47 +71,15 @@ async function main() {
     console.log('       npm run dev -- --industry INDUSTRY_NAME');
     console.log('       npm run dev -- --watchlist');
     console.log('       npm run dev -- --top N');
-    console.log('       npm run dev -- --rebuild (rebuilds both sectors & industries)');
-    console.log('       npm run dev -- --rebuild-sectors (legacy)');
     console.log('Examples:');
     console.log('  npm run dev -- AAPL');
     console.log('  npm run dev -- AAPL MSFT GOOGL');
-    console.log('  npm run dev -- Technology');
-    console.log('  npm run dev -- --industry Semiconductors');
+    console.log('  npm run dev -- "Electronic Technology"');
+    console.log('  npm run dev -- --industry "Software - Application"');
     console.log('  npm run dev -- --watchlist');
-    console.log('  npm run dev -- --top 10\n');
-    console.log('Available sectors:');
-    
-    try {
-      const sectors = await SectorBuilder.getSectors();
-      const sectorList = Object.entries(sectors)
-        .map(([key, data]: [string, any]) => {
-          const display = data.display || data.name;
-          return `  ${key.padEnd(20)} - ${display} (${data.symbols.length} stocks)`;
-        })
-        .join('\n');
-      console.log(sectorList);
-      
-      console.log('\nAvailable industries:');
-      const industries = await SectorBuilder.getIndustries();
-      const industryList = Object.entries(industries)
-        .map(([key, data]: [string, any]) => {
-          return `  ${key.padEnd(35)} (${data.symbols.length} stocks)`;
-        })
-        .join('\n');
-      console.log(industryList);
-    } catch (error) {
-      console.log('  (Could not fetch sectors/industries - check internet connection)');
-    }
-    
-    process.exit(1);
+    console.log('  npm run dev -- --top 10');
+    process.exit(0);
   }
-
-  // Determine symbols to evaluate
-  let symbols: string[] = [];
-  let sectorName: string | null = null;
-  let industryName: string | null = null;
-  let isWatchlist = false;
 
   if (args[0] === '--watchlist') {
     const watchlistTickers = WatchlistManager.getTickers();
