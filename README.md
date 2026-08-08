@@ -28,13 +28,32 @@ npm install
 
 ### Web UI (Recommended)
 
+**Option 1: Start both frontend and backend together (easiest)**
+
 ```bash
-npm run dev
+bash start-dev.sh
 ```
 
 This starts:
-- **Frontend**: React UI on http://localhost:5175
-- **Backend**: API server on http://localhost:3000
+- **Backend API**: http://localhost:3000
+- **Frontend UI**: http://localhost:5174 (or next available port if 5174 is in use)
+
+The frontend will show you the actual port when it starts.
+
+**Option 2: Start separately in two terminals**
+
+Terminal 1 - Start the backend API server:
+```bash
+npm run server
+```
+
+Terminal 2 - Start the frontend dev server:
+```bash
+cd frontend
+npm run dev
+```
+
+Then open the URL shown in Terminal 2 (usually http://localhost:5174).
 
 The web interface provides:
 - 🌍 Sector Browser - Browse all 20 sectors with sortable stock lists
@@ -218,20 +237,25 @@ Edit `config/evaluation-criteria.json` to customize scoring thresholds.
 ## Development
 
 ```bash
-# Install dependencies
+# Install dependencies in root
 npm install
 
-# Start dev server (frontend + backend)
-npm run dev
+# Install frontend dependencies
+cd frontend && npm install && cd ..
 
-# Frontend only (Vite, port 5175)
-cd frontend && npm run dev
+# Start both backend and frontend
+bash start-dev.sh
 
-# Backend only (Express, port 3000)
+# OR start separately:
+# Terminal 1 - Backend API server
 npm run server
 
-# Build for production
-npm run build
+# Terminal 2 - Frontend dev server (in frontend/ directory)
+cd frontend && npm run dev
+
+# CLI evaluation (in root directory)
+npm run dev -- AAPL
+npm run dev -- "Electronic Technology"
 ```
 
 ## Browser Support

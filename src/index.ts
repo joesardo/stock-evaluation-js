@@ -81,6 +81,12 @@ async function main() {
     process.exit(0);
   }
 
+  // Determine symbols to evaluate
+  let symbols: string[] = [];
+  let sectorName: string | null = null;
+  let industryName: string | null = null;
+  let isWatchlist = false;
+
   if (args[0] === '--watchlist') {
     const watchlistTickers = WatchlistManager.getTickers();
     if (watchlistTickers.length === 0) {
