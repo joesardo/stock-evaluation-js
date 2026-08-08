@@ -46,6 +46,7 @@ export default function IndustryBrowser() {
   const evaluateIndustry = async (industryName: string) => {
     try {
       setLoading(true)
+      setShowResults(false)
       setError('')
 
       const stocks = await api.evaluateIndustry(industryName)
@@ -122,7 +123,10 @@ export default function IndustryBrowser() {
       </div>
 
       {showResults && results.length > 0 && (
-        <div className="card">
+        <div className="card" style={{
+          animation: 'fadeIn 0.3s ease-in',
+          opacity: 1,
+        }}>
           <div className="card-title">📊 SUMMARY - {selectedIndustry} Industry ({results.length} stocks)</div>
           <table>
             <thead>
@@ -146,6 +150,19 @@ export default function IndustryBrowser() {
           </table>
         </div>
       )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   )
 }

@@ -41,6 +41,7 @@ export default function SectorBrowser() {
   const evaluateSector = async (sectorName: string) => {
     try {
       setLoading(true)
+      setShowResults(false)
       setError('')
 
       const stocks = await api.evaluateSector(sectorName)
@@ -106,7 +107,10 @@ export default function SectorBrowser() {
       </div>
 
       {showResults && results.length > 0 && (
-        <div className="card">
+        <div className="card" style={{
+          animation: 'fadeIn 0.3s ease-in',
+          opacity: 1,
+        }}>
           <div className="card-title">📊 SUMMARY - {selectedSector} Sector ({results.length} stocks)</div>
           <table>
             <thead>
@@ -130,6 +134,19 @@ export default function SectorBrowser() {
           </table>
         </div>
       )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   )
 }
