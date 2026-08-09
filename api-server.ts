@@ -11,6 +11,25 @@ const PORT = 3000
 app.use(cors())
 app.use(express.json())
 
+// Helper function to add timeout to async operations
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 15000): Promise<T> {
+  let timeoutHandle: NodeJS.Timeout
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timeoutHandle = setTimeout(() => {
+      reject(new Error(`Request timeout after ${timeoutMs}ms`))
+    }, timeoutMs)
+  })
+  
+  try {
+    const result = await Promise.race([promise, timeoutPromise])
+    clearTimeout(timeoutHandle)
+    return result
+  } catch (error) {
+    clearTimeout(timeoutHandle)
+    throw error
+  }
+}
+
 // GET /api/sectors
 app.get('/api/sectors', async (_req: Request, res: Response) => {
   try {
@@ -45,6 +64,18 @@ app.get('/api/industries', async (_req: Request, res: Response) => {
   }
 })
 
+// Helper function to classify market cap
+function getMarketCapCategory(marketCap: number | null): string {
+  if (!marketCap || marketCap === 0) return 'N/A'
+  const billionsMC = marketCap / 1_000_000_000
+  if (billionsMC >= 200) return 'Mega'
+  if (billionsMC >= 10) return 'Large'
+  if (billionsMC >= 2) return 'Mid'
+  if (billionsMC >= 0.3) return 'Small'
+  if (billionsMC >= 0.05) return 'Micro'
+  return 'Penny'
+}
+
 // POST /api/evaluate/sector
 app.post('/api/evaluate/sector', async (req: Request, res: Response) => {
   try {
@@ -68,27 +99,40 @@ app.post('/api/evaluate/sector', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Sector not found' })
     }
 
-    // Evaluate stocks
-    const results = await Promise.all(
-      targetSector.symbols.map(async (symbol: string) => {
-        try {
-          const data = await DataFetcher.fetchStockData(symbol)
-          const piotroskiScore = PiotroskiEvaluator.calculateFScore(data)
-          const valueScore = ValueEvaluator.calculateValueScore(data)
-          return {
-            symbol,
-            piotroskiScore,
-            valueScore
-          }
-        } catch (err) {
-          return {
-            symbol,
-            piotroskiScore: 0,
-            valueScore: 0
-          }
+    // Evaluate stocks with timeout per stock and allSettled to handle failures gracefully
+    const stockPromises = targetSector.symbols.map(async (symbol: string) => {
+      try {
+        const data = await withTimeout(DataFetcher.fetchStockData(symbol), 15000)
+        const piotroskiScore = PiotroskiEvaluator.calculateFScore(data)
+        const valueScore = ValueEvaluator.calculateValueScore(data)
+        return {
+          symbol,
+          company_name: data.company_name,
+          piotroskiScore,
+          valueScore,
+          market_cap: data.market_cap,
+          market_cap_category: getMarketCapCategory(data.market_cap),
+          price: data.price
         }
-      })
-    )
+      } catch (err) {
+        console.error(`Failed to fetch ${symbol}: ${err instanceof Error ? err.message : String(err)}`)
+        return {
+          symbol,
+          company_name: 'Unknown',
+          piotroskiScore: 0,
+          valueScore: 0,
+          market_cap: null,
+          market_cap_category: 'N/A',
+          price: 0
+        }
+      }
+    })
+
+    // Use allSettled to ensure all requests complete even if some fail
+    const allResults = await Promise.allSettled(stockPromises)
+    const results = allResults
+      .filter(result => result.status === 'fulfilled')
+      .map(result => (result as PromiseFulfilledResult<any>).value)
 
     res.json(results.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore))
   } catch (error) {
@@ -119,27 +163,40 @@ app.post('/api/evaluate/industry', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Industry not found' })
     }
 
-    // Evaluate stocks
-    const results = await Promise.all(
-      targetIndustry.symbols.map(async (symbol: string) => {
-        try {
-          const data = await DataFetcher.fetchStockData(symbol)
-          const piotroskiScore = PiotroskiEvaluator.calculateFScore(data)
-          const valueScore = ValueEvaluator.calculateValueScore(data)
-          return {
-            symbol,
-            piotroskiScore,
-            valueScore
-          }
-        } catch (err) {
-          return {
-            symbol,
-            piotroskiScore: 0,
-            valueScore: 0
-          }
+    // Evaluate stocks with timeout per stock and allSettled to handle failures gracefully
+    const stockPromises = targetIndustry.symbols.map(async (symbol: string) => {
+      try {
+        const data = await withTimeout(DataFetcher.fetchStockData(symbol), 15000)
+        const piotroskiScore = PiotroskiEvaluator.calculateFScore(data)
+        const valueScore = ValueEvaluator.calculateValueScore(data)
+        return {
+          symbol,
+          company_name: data.company_name,
+          piotroskiScore,
+          valueScore,
+          market_cap: data.market_cap,
+          market_cap_category: getMarketCapCategory(data.market_cap),
+          price: data.price
         }
-      })
-    )
+      } catch (err) {
+        console.error(`Failed to fetch ${symbol}: ${err instanceof Error ? err.message : String(err)}`)
+        return {
+          symbol,
+          company_name: 'Unknown',
+          piotroskiScore: 0,
+          valueScore: 0,
+          market_cap: null,
+          market_cap_category: 'N/A',
+          price: 0
+        }
+      }
+    })
+
+    // Use allSettled to ensure all requests complete even if some fail
+    const allResults = await Promise.allSettled(stockPromises)
+    const results = allResults
+      .filter(result => result.status === 'fulfilled')
+      .map(result => (result as PromiseFulfilledResult<any>).value)
 
     res.json(results.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore))
   } catch (error) {

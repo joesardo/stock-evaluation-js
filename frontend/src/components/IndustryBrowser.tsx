@@ -132,6 +132,8 @@ export default function IndustryBrowser() {
             <thead>
               <tr>
                 <th>Symbol</th>
+                <th>Company</th>
+                <th>Market Cap</th>
                 <th>Piotroski F-Score</th>
                 <th>Value Score</th>
               </tr>
@@ -142,6 +144,26 @@ export default function IndustryBrowser() {
                 .map((stock) => (
                   <tr key={stock.symbol}>
                     <td><strong>{stock.symbol}</strong></td>
+                    <td style={{ fontSize: '0.875rem', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stock.company_name}</td>
+                    <td>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '0.25rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 'bold',
+                        backgroundColor: stock.market_cap_category === 'Mega' ? '#0ea5e9' :
+                                         stock.market_cap_category === 'Large' ? '#10b981' :
+                                         stock.market_cap_category === 'Mid' ? '#f59e0b' :
+                                         stock.market_cap_category === 'Small' ? '#ef4444' :
+                                         stock.market_cap_category === 'Micro' ? '#8b5cf6' :
+                                         stock.market_cap_category === 'Penny' ? '#6b7280' :
+                                         '#9ca3af',
+                        color: '#ffffff'
+                      }}>
+                        {stock.market_cap_category}
+                      </span>
+                    </td>
                     <td><ScoreIndicator score={stock.piotroskiScore} max={9} /></td>
                     <td><ScoreIndicator score={stock.valueScore} max={100} /></td>
                   </tr>
