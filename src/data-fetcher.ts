@@ -212,7 +212,10 @@ export class YFinanceDataFetcher {
       
       // Import yahoo-finance2 - v11+ requires instantiation
       const YahooFinance = require('yahoo-finance2').default;
-      const yf = new YahooFinance({ suppressNotices: ['yahooSurvey'] });
+      const yf = new YahooFinance({ 
+        suppressNotices: ['yahooSurvey'],
+        validation: { logErrors: false }
+      });
       
       // Fetch quote data (price, 52-week range, etc.)
       const quote = await yf.quote(symbol);

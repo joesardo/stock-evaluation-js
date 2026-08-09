@@ -29,7 +29,7 @@
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "express": "^5.2.1",
-    "yahoo-finance2": "^4.0.0"
+    "yahoo-finance2": "^4.0.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
