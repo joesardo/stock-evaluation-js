@@ -7,7 +7,7 @@ interface Industry {
   count: number
 }
 
-const IndustryBrowser = forwardRef(function IndustryBrowser(_, ref) {
+const IndustryBrowser = forwardRef(function IndustryBrowser() {
   const [industries, setIndustries] = useState<Industry[]>([])
   const [selectedIndustry, setSelectedIndustry] = useState<string>('')
   const [searchTerm, setSearchTerm] = useState('')

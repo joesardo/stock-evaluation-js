@@ -7,7 +7,7 @@ interface Sector {
   count: number
 }
 
-const SectorBrowser = forwardRef(function SectorBrowser(_, ref) {
+const SectorBrowser = forwardRef(function SectorBrowser() {
   const [sectors, setSectors] = useState<Sector[]>([])
   const [selectedSector, setSelectedSector] = useState<string>('')
   const [loading, setLoading] = useState(false)
