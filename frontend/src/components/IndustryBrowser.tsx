@@ -80,9 +80,7 @@ const IndustryBrowser = forwardRef(function IndustryBrowser(_, ref) {
           />
         </div>
 
-        {loading ? (
-          <div className="loading">Loading industries...</div>
-        ) : filteredIndustries.length === 0 ? (
+        {loading ? null : filteredIndustries.length === 0 ? (
           <div style={{ color: 'var(--text-secondary)' }}>
             {searchTerm ? 'No industries match your search' : 'No industries available'}
           </div>

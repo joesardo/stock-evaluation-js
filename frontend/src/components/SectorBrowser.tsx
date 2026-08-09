@@ -66,9 +66,7 @@ const SectorBrowser = forwardRef(function SectorBrowser(_, ref) {
           Select a sector to see all stocks in that category and evaluate them
         </p>
 
-        {loading ? (
-          <div className="loading">Loading sectors...</div>
-        ) : sectors.length === 0 ? (
+        {loading ? null : sectors.length === 0 ? (
           <div style={{ color: 'var(--text-secondary)' }}>No sectors available</div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
