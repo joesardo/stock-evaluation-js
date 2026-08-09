@@ -1,57 +1,57 @@
 import { useState, useEffect } from 'react'
-import { api, Stock } from '../api'
+import { api } from '../api'
 import { ScoreIndicator } from './ScoreBar'
 
 export default function Watchlist() {
   const [ticker, setTicker] = useState('')
-  const [watchlist, setWatchlist] = useState<Stock[]>([])
+  const [watchlist, setWatchlist] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [results, setResults] = useState<Stock[]>([])
+  const [results, setResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
 
-  // Load watchlist from localStorage on mount
+  // Load watchlist from backend on mount
   useEffect(() => {
-    const stored = localStorage.getItem('watchlist')
-    if (stored) {
+    const loadWatchlist = async () => {
       try {
-        setWatchlist(JSON.parse(stored))
+        const data = await api.getWatchlist()
+        setWatchlist(data.tickers)
       } catch (e) {
-        console.error('Failed to load watchlist from localStorage')
+        console.error('Failed to load watchlist from backend')
       }
     }
+    loadWatchlist()
   }, [])
 
-  // Save watchlist to localStorage
-  useEffect(() => {
-    localStorage.setItem('watchlist', JSON.stringify(watchlist))
-  }, [watchlist])
-
-  const addTicker = () => {
+  const addTicker = async () => {
     const symbol = ticker.toUpperCase().trim()
     if (!symbol) {
       setError('Please enter a ticker symbol')
       return
     }
 
-    if (watchlist.some(s => s.symbol === symbol)) {
-      setError(`${symbol} is already in your watchlist`)
-      return
+    try {
+      setError('')
+      const updatedTickers = await api.addToWatchlist(symbol)
+      setWatchlist(updatedTickers)
+      setTicker('')
+      setSuccess(`Added ${symbol} to watchlist`)
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err) {
+      setError(`Failed to add ${symbol}: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
-
-    const newStock: Stock = { symbol, piotroskiScore: 0, valueScore: 0 }
-    setWatchlist([...watchlist, newStock])
-    setTicker('')
-    setError('')
-    setSuccess(`Added ${symbol} to watchlist`)
-    setTimeout(() => setSuccess(''), 3000)
   }
 
-  const removeTicker = (symbol: string) => {
-    setWatchlist(watchlist.filter(s => s.symbol !== symbol))
-    setSuccess(`Removed ${symbol} from watchlist`)
-    setTimeout(() => setSuccess(''), 3000)
+  const removeTicker = async (symbol: string) => {
+    try {
+      const updatedTickers = await api.removeFromWatchlist(symbol)
+      setWatchlist(updatedTickers)
+      setSuccess(`Removed ${symbol} from watchlist`)
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err) {
+      setError(`Failed to remove ${symbol}`)
+    }
   }
 
   const evaluateWatchlist = async () => {
@@ -63,9 +63,9 @@ export default function Watchlist() {
     try {
       setLoading(true)
       setError('')
+      setShowResults(false)
 
-      const tickers = watchlist.map(s => s.symbol)
-      const stocks = await api.evaluateWatchlist(tickers)
+      const stocks = await api.evaluateWatchlist(watchlist)
       setResults(stocks)
       setShowResults(true)
     } catch (err) {
@@ -75,11 +75,16 @@ export default function Watchlist() {
     }
   }
 
-  const clearWatchlist = () => {
+  const clearWatchlist = async () => {
     if (confirm('Clear all tickers from watchlist?')) {
-      setWatchlist([])
-      setSuccess('Watchlist cleared')
-      setTimeout(() => setSuccess(''), 3000)
+      try {
+        const updatedTickers = await api.clearWatchlist()
+        setWatchlist(updatedTickers)
+        setSuccess('Watchlist cleared')
+        setTimeout(() => setSuccess(''), 3000)
+      } catch (err) {
+        setError('Failed to clear watchlist')
+      }
     }
   }
 
@@ -122,13 +127,13 @@ export default function Watchlist() {
                 </tr>
               </thead>
               <tbody>
-                {watchlist.map((stock) => (
-                  <tr key={stock.symbol}>
-                    <td><strong>{stock.symbol}</strong></td>
+                {watchlist.map((symbol) => (
+                  <tr key={symbol}>
+                    <td><strong>{symbol}</strong></td>
                     <td style={{ textAlign: 'right' }}>
                       <button
                         className="btn btn-danger"
-                        onClick={() => removeTicker(stock.symbol)}
+                        onClick={() => removeTicker(symbol)}
                         style={{ fontSize: '0.75rem', padding: '0.25rem 0.75rem' }}
                       >
                         Remove

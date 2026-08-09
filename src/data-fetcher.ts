@@ -192,7 +192,7 @@ export class AlphaVantageDataFetcher {
  */
 export class YFinanceDataFetcher {
   private static lastRequestTime = 0;
-  private static readonly MIN_DELAY_MS = 250; // 250ms between requests
+  private static readonly MIN_DELAY_MS = 50; // 50ms between requests (minimal throttle for sequential processing)
   
   private static async throttle() {
     const now = Date.now();

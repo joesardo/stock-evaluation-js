@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, forwardRef } from 'react'
 import { api } from '../api'
 import { ScoreIndicator } from './ScoreBar'
 
@@ -7,13 +7,14 @@ interface Sector {
   count: number
 }
 
-export default function SectorBrowser() {
+const SectorBrowser = forwardRef(function SectorBrowser(_, ref) {
   const [sectors, setSectors] = useState<Sector[]>([])
   const [selectedSector, setSelectedSector] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [results, setResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
+  const [progress, setProgress] = useState({ current: 0, total: 0, startTime: 0 })
 
   // Load sectors from backend
   useEffect(() => {
@@ -44,7 +45,27 @@ export default function SectorBrowser() {
       setShowResults(false)
       setError('')
 
+      // Find the selected sector to get stock count
+      const sector = sectors.find(s => s.name === sectorName)
+      const stockCount = sector?.count || 0
+      
+      // Initialize progress tracking (1 second per stock)
+      setProgress({ current: 0, total: stockCount, startTime: Date.now() })
+
+      // Simulate progress updates while fetching
+      const progressInterval = setInterval(() => {
+        setProgress(p => {
+          const elapsed = (Date.now() - p.startTime) / 1000
+          const estimated = Math.min(elapsed, p.total - 0.5) // Don't reach 100% until done
+          return { ...p, current: estimated }
+        })
+      }, 500)
+
       const stocks = await api.evaluateSector(sectorName)
+      
+      clearInterval(progressInterval)
+      setProgress({ current: stockCount, total: stockCount, startTime: 0 })
+      
       setResults(stocks)
       setShowResults(true)
     } catch (err) {
@@ -102,6 +123,41 @@ export default function SectorBrowser() {
             >
               {loading ? 'Evaluating...' : `📊 Evaluate ${selectedSector}`}
             </button>
+
+            {loading && progress.total > 0 && (
+              <div style={{ marginTop: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+                  <span>Fetching stock data...</span>
+                  <span>{Math.round(progress.current)} / {progress.total}</span>
+                </div>
+                <div style={{
+                  width: '100%',
+                  height: '24px',
+                  backgroundColor: 'var(--bg-secondary)',
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                  border: '1px solid var(--border)'
+                }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${Math.min(100, (progress.current / progress.total) * 100)}%`,
+                    backgroundColor: '#10b981',
+                    transition: 'width 0.2s ease-in-out',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '0.75rem',
+                    fontWeight: 'bold'
+                  }}>
+                    {Math.min(100, Math.round((progress.current / progress.total) * 100))}%
+                  </div>
+                </div>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                  Estimated time: ~{Math.ceil(progress.total * 0.05)}s
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -171,4 +227,6 @@ export default function SectorBrowser() {
       `}</style>
     </div>
   )
-}
+})
+
+export default SectorBrowser

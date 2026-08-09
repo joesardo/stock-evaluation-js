@@ -84,5 +84,80 @@ export const api = {
       console.error('Error evaluating watchlist:', error)
       return []
     }
+  },
+
+  async getWatchlist(): Promise<{ tickers: string[]; lastUpdated: string }> {
+    try {
+      const response = await fetch(`${API_URL}/watchlist`)
+      if (!response.ok) throw new Error('Failed to fetch watchlist')
+      return response.json()
+    } catch (error) {
+      console.error('Error fetching watchlist:', error)
+      return { tickers: [], lastUpdated: new Date().toISOString() }
+    }
+  },
+
+  async addToWatchlist(ticker: string): Promise<string[]> {
+    try {
+      const response = await fetch(`${API_URL}/watchlist/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticker })
+      })
+      if (!response.ok) throw new Error('Failed to add to watchlist')
+      const data = await response.json()
+      return data.tickers
+    } catch (error) {
+      console.error('Error adding to watchlist:', error)
+      throw error
+    }
+  },
+
+  async removeFromWatchlist(ticker: string): Promise<string[]> {
+    try {
+      const response = await fetch(`${API_URL}/watchlist/remove`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticker })
+      })
+      if (!response.ok) throw new Error('Failed to remove from watchlist')
+      const data = await response.json()
+      return data.tickers
+    } catch (error) {
+      console.error('Error removing from watchlist:', error)
+      throw error
+    }
+  },
+
+  async clearWatchlist(): Promise<string[]> {
+    try {
+      const response = await fetch(`${API_URL}/watchlist/clear`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      })
+      if (!response.ok) throw new Error('Failed to clear watchlist')
+      const data = await response.json()
+      return data.tickers
+    } catch (error) {
+      console.error('Error clearing watchlist:', error)
+      throw error
+    }
+  },
+
+  async setWatchlist(tickers: string[]): Promise<string[]> {
+    try {
+      const response = await fetch(`${API_URL}/watchlist/set`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tickers })
+      })
+      if (!response.ok) throw new Error('Failed to set watchlist')
+      const data = await response.json()
+      return data.tickers
+    } catch (error) {
+      console.error('Error setting watchlist:', error)
+      throw error
+    }
   }
 }

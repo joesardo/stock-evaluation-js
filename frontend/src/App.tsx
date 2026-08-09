@@ -1,26 +1,27 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import './App.css'
-import Dashboard from './components/Dashboard'
 import Watchlist from './components/Watchlist'
 import SectorBrowser from './components/SectorBrowser'
 import IndustryBrowser from './components/IndustryBrowser'
 
-type View = 'dashboard' | 'watchlist' | 'sectors' | 'industries'
+type View = 'watchlist' | 'sectors' | 'industries'
+
+interface ViewState {
+  sectors?: any
+  industries?: any
+}
 
 function App() {
-  const [view, setView] = useState<View>('dashboard')
+  const [view, setView] = useState<View>('sectors')
+  // Store component instances to preserve state when switching tabs
+  const sectorBrowserRef = useRef<any>(null)
+  const industryBrowserRef = useRef<any>(null)
 
   return (
     <div className="app">
       <header className="header">
         <h1>📊 Stock Evaluator</h1>
         <nav className="nav">
-          <button 
-            className={`nav-btn ${view === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setView('dashboard')}
-          >
-            Dashboard
-          </button>
           <button 
             className={`nav-btn ${view === 'watchlist' ? 'active' : ''}`}
             onClick={() => setView('watchlist')}
@@ -43,10 +44,9 @@ function App() {
       </header>
 
       <main className="main-content">
-        {view === 'dashboard' && <Dashboard />}
         {view === 'watchlist' && <Watchlist />}
-        {view === 'sectors' && <SectorBrowser />}
-        {view === 'industries' && <IndustryBrowser />}
+        {view === 'sectors' && <SectorBrowser ref={sectorBrowserRef} />}
+        {view === 'industries' && <IndustryBrowser ref={industryBrowserRef} />}
       </main>
     </div>
   )
