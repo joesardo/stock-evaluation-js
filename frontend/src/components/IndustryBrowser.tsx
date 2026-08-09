@@ -15,7 +15,6 @@ const IndustryBrowser = forwardRef(function IndustryBrowser(_, ref) {
   const [error, setError] = useState('')
   const [results, setResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
-  const [progress, setProgress] = useState({ current: 0, total: 0, startTime: 0 })
 
   // Load industries from backend
   useEffect(() => {
@@ -50,27 +49,7 @@ const IndustryBrowser = forwardRef(function IndustryBrowser(_, ref) {
       setShowResults(false)
       setError('')
 
-      // Find the selected industry to get stock count
-      const industry = industries.find(i => i.name === industryName)
-      const stockCount = industry?.count || 0
-      
-      // Initialize progress tracking (1 second per stock)
-      setProgress({ current: 0, total: stockCount, startTime: Date.now() })
-
-      // Simulate progress updates while fetching
-      const progressInterval = setInterval(() => {
-        setProgress(p => {
-          const elapsed = (Date.now() - p.startTime) / 1000
-          const estimated = Math.min(elapsed, p.total - 0.5) // Don't reach 100% until done
-          return { ...p, current: estimated }
-        })
-      }, 500)
-
       const stocks = await api.evaluateIndustry(industryName)
-      
-      clearInterval(progressInterval)
-      setProgress({ current: stockCount, total: stockCount, startTime: 0 })
-      
       setResults(stocks)
       setShowResults(true)
     } catch (err) {
@@ -140,37 +119,19 @@ const IndustryBrowser = forwardRef(function IndustryBrowser(_, ref) {
               {loading ? 'Evaluating...' : `📊 Evaluate ${selectedIndustry}`}
             </button>
 
-            {loading && progress.total > 0 && (
-              <div style={{ marginTop: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
-                  <span>Fetching stock data...</span>
-                  <span>{Math.round(progress.current)} / {progress.total}</span>
-                </div>
+            {loading && (
+              <div style={{ marginTop: '1rem', textAlign: 'center' }}>
                 <div style={{
-                  width: '100%',
+                  display: 'inline-block',
+                  width: '24px',
                   height: '24px',
-                  backgroundColor: 'var(--bg-secondary)',
-                  borderRadius: '4px',
-                  overflow: 'hidden',
-                  border: '1px solid var(--border)'
-                }}>
-                  <div style={{
-                    height: '100%',
-                    width: `${Math.min(100, (progress.current / progress.total) * 100)}%`,
-                    backgroundColor: '#10b981',
-                    transition: 'width 0.2s ease-in-out',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '0.75rem',
-                    fontWeight: 'bold'
-                  }}>
-                    {Math.min(100, Math.round((progress.current / progress.total) * 100))}%
-                  </div>
-                </div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.5rem' }}>
-                  Estimated time: ~{Math.ceil(progress.total * 0.05)}s
+                  border: '3px solid var(--border)',
+                  borderTop: '3px solid #10b981',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                  Fetching stocks...
                 </p>
               </div>
             )}
@@ -238,6 +199,15 @@ const IndustryBrowser = forwardRef(function IndustryBrowser(_, ref) {
           to {
             opacity: 1;
             transform: translateY(0);
+          }
+        }
+
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
           }
         }
       `}</style>

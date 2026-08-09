@@ -79,8 +79,11 @@ function getMarketCapCategory(marketCap: number | null): string {
   return 'Penny'
 }
 
-// Helper function to process stocks in batches
-async function evaluateStocksSequentially(symbols: string[]): Promise<any[]> {
+// Helper function to process stocks in batches with progress callback
+async function evaluateStocksSequentially(
+  symbols: string[], 
+  onProgress?: (current: number, total: number) => void
+): Promise<any[]> {
   const results: any[] = []
   const batchSize = 5 // Process in parallel, then move to next batch
 
@@ -119,6 +122,11 @@ async function evaluateStocksSequentially(symbols: string[]): Promise<any[]> {
     // Wait for entire batch to complete before moving to next
     const batchResults = await Promise.all(batchPromises)
     results.push(...batchResults)
+    
+    // Report progress after each batch
+    if (onProgress) {
+      onProgress(results.length, symbols.length)
+    }
   }
 
   return results
