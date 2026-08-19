@@ -14,6 +14,7 @@ const SectorBrowser = forwardRef(function SectorBrowser() {
   const [error, setError] = useState('')
   const [results, setResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
+  const [currentStock, setCurrentStock] = useState<string>('')
 
   // Load sectors from backend
   useEffect(() => {
@@ -39,17 +40,42 @@ const SectorBrowser = forwardRef(function SectorBrowser() {
   }, [])
 
   const evaluateSector = async (sectorName: string) => {
+    console.log('[SectorBrowser] evaluateSector called:', sectorName)
     try {
+      console.log('[SectorBrowser] Setting loading state')
       setLoading(true)
-      setShowResults(false)
-      setError('')
-
-      const stocks = await api.evaluateSector(sectorName)
-      setResults(stocks)
       setShowResults(true)
+      setError('')
+      setResults([])
+      setCurrentStock('')
+
+      console.log('[SectorBrowser] Calling api.evaluateSectorStream')
+      await api.evaluateSectorStream(
+        sectorName,
+        (result) => {
+          console.log('[SectorBrowser] onResult:', result.symbol)
+          // Add each result as it arrives
+          setResults(prev => {
+            const newResults = [...prev, result]
+            return newResults.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore)
+          })
+          setCurrentStock(result.symbol)
+        },
+        (finalResults) => {
+          console.log('[SectorBrowser] onComplete')
+          // All done
+          setCurrentStock('')
+          setLoading(false)
+        },
+        (error) => {
+          console.log('[SectorBrowser] onError:', error)
+          setError(error || 'Failed to evaluate sector')
+          setLoading(false)
+        }
+      )
     } catch (err) {
+      console.error('[SectorBrowser] Exception:', err)
       setError('Failed to evaluate sector')
-    } finally {
       setLoading(false)
     }
   }

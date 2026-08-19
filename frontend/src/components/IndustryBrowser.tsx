@@ -15,6 +15,7 @@ const IndustryBrowser = forwardRef(function IndustryBrowser() {
   const [error, setError] = useState('')
   const [results, setResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
+  const [currentStock, setCurrentStock] = useState<string>('')
 
   // Load industries from backend
   useEffect(() => {
@@ -46,15 +47,33 @@ const IndustryBrowser = forwardRef(function IndustryBrowser() {
   const evaluateIndustry = async (industryName: string) => {
     try {
       setLoading(true)
-      setShowResults(false)
-      setError('')
-
-      const stocks = await api.evaluateIndustry(industryName)
-      setResults(stocks)
       setShowResults(true)
+      setError('')
+      setResults([])
+      setCurrentStock('')
+
+      await api.evaluateIndustryStream(
+        industryName,
+        (result) => {
+          // Add each result as it arrives
+          setResults(prev => {
+            const newResults = [...prev, result]
+            return newResults.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore)
+          })
+          setCurrentStock(result.symbol)
+        },
+        (finalResults) => {
+          // All done
+          setCurrentStock('')
+          setLoading(false)
+        },
+        (error) => {
+          setError(error || 'Failed to evaluate industry')
+          setLoading(false)
+        }
+      )
     } catch (err) {
       setError('Failed to evaluate industry')
-    } finally {
       setLoading(false)
     }
   }

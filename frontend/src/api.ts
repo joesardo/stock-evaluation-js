@@ -56,6 +56,72 @@ export const api = {
     }
   },
 
+  async evaluateSectorStream(
+    sectorName: string,
+    onResult: (result: Stock) => void,
+    onComplete: (allResults: Stock[]) => void,
+    onError: (error: string) => void
+  ): Promise<void> {
+    try {
+      console.log(`[Stream] Connecting to /evaluate/sector-stream for ${sectorName}`)
+      const url = `${API_URL}/evaluate/sector-stream?sector=${encodeURIComponent(sectorName)}`
+      console.log(`[Stream] URL: ${url}`)
+      
+      const eventSource = new EventSource(url)
+      const allResults: Stock[] = []
+      let hasReceivedData = false
+
+      const timeout = setTimeout(() => {
+        if (!hasReceivedData) {
+          console.error('[Stream] Timeout - no data received')
+          eventSource.close()
+          onError('Connection timeout - no data received')
+        }
+      }, 5000)
+
+      eventSource.onmessage = (event) => {
+        hasReceivedData = true
+        clearTimeout(timeout)
+        console.log(`[Stream] Message:`, event.data.substring(0, 100))
+        
+        try {
+          const data = JSON.parse(event.data)
+          console.log(`[Stream] Parsed:`, data.type, data.symbol || '')
+          
+          if (data.type === 'progress' && data.result) {
+            onResult(data.result)
+            allResults.push(data.result)
+          } else if (data.type === 'complete') {
+            console.log(`[Stream] Complete`)
+            onComplete(data.results || allResults)
+            eventSource.close()
+          } else if (data.type === 'error') {
+            console.error(`[Stream] Error from server:`, data.error)
+            onError(data.error || 'Unknown error')
+            eventSource.close()
+          }
+        } catch (err) {
+          console.error('[Stream] Parse error:', err, event.data)
+        }
+      }
+
+      eventSource.onerror = (error) => {
+        clearTimeout(timeout)
+        console.error('[Stream] EventSource error:', error)
+        console.error('[Stream] ReadyState:', eventSource.readyState)
+        eventSource.close()
+        onError('Connection error')
+      }
+      
+      eventSource.onopen = () => {
+        console.log('[Stream] Connection opened')
+      }
+    } catch (error) {
+      console.error('[Stream] Exception:', error)
+      onError(error instanceof Error ? error.message : 'Unknown error')
+    }
+  },
+
   async evaluateIndustry(industryName: string): Promise<Stock[]> {
     try {
       const response = await fetch(`${API_URL}/evaluate/industry`, {
@@ -68,6 +134,72 @@ export const api = {
     } catch (error) {
       console.error('Error evaluating industry:', error)
       return []
+    }
+  },
+
+  async evaluateIndustryStream(
+    industryName: string,
+    onResult: (result: Stock) => void,
+    onComplete: (allResults: Stock[]) => void,
+    onError: (error: string) => void
+  ): Promise<void> {
+    try {
+      console.log(`[Stream] Connecting to /evaluate/industry-stream for ${industryName}`)
+      const url = `${API_URL}/evaluate/industry-stream?industry=${encodeURIComponent(industryName)}`
+      console.log(`[Stream] URL: ${url}`)
+      
+      const eventSource = new EventSource(url)
+      const allResults: Stock[] = []
+      let hasReceivedData = false
+
+      const timeout = setTimeout(() => {
+        if (!hasReceivedData) {
+          console.error('[Stream] Timeout - no data received')
+          eventSource.close()
+          onError('Connection timeout - no data received')
+        }
+      }, 5000)
+
+      eventSource.onmessage = (event) => {
+        hasReceivedData = true
+        clearTimeout(timeout)
+        console.log(`[Stream] Message:`, event.data.substring(0, 100))
+        
+        try {
+          const data = JSON.parse(event.data)
+          console.log(`[Stream] Parsed:`, data.type, data.symbol || '')
+          
+          if (data.type === 'progress' && data.result) {
+            onResult(data.result)
+            allResults.push(data.result)
+          } else if (data.type === 'complete') {
+            console.log(`[Stream] Complete`)
+            onComplete(data.results || allResults)
+            eventSource.close()
+          } else if (data.type === 'error') {
+            console.error(`[Stream] Error from server:`, data.error)
+            onError(data.error || 'Unknown error')
+            eventSource.close()
+          }
+        } catch (err) {
+          console.error('[Stream] Parse error:', err, event.data)
+        }
+      }
+
+      eventSource.onerror = (error) => {
+        clearTimeout(timeout)
+        console.error('[Stream] EventSource error:', error)
+        console.error('[Stream] ReadyState:', eventSource.readyState)
+        eventSource.close()
+        onError('Connection error')
+      }
+      
+      eventSource.onopen = () => {
+        console.log('[Stream] Connection opened')
+      }
+    } catch (error) {
+      console.error('[Stream] Exception:', error)
+      onError(error instanceof Error ? error.message : 'Unknown error')
     }
   },
 

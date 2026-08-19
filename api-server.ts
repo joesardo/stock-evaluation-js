@@ -324,6 +324,128 @@ app.post('/api/watchlist/set', (req: Request, res: Response) => {
   }
 })
 
+// GET /api/evaluate/sector-stream - Server-Sent Events for streaming results
+app.get('/api/evaluate/sector-stream', async (req: Request, res: Response) => {
+  try {
+    const sector = req.query.sector as string
+    if (!sector) {
+      res.setHeader('Content-Type', 'text/event-stream')
+      res.setHeader('Cache-Control', 'no-cache')
+      res.setHeader('Connection', 'keep-alive')
+      res.setHeader('Access-Control-Allow-Origin', '*')
+      res.write('data: ' + JSON.stringify({ error: 'Sector name required', type: 'error' }) + '\n\n')
+      res.end()
+      return
+    }
+
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.setHeader('Access-Control-Allow-Origin', '*')
+
+    const sectors = await SectorBuilder.getSectors()
+    
+    // Find the sector
+    let targetSector: any = null
+    for (const [_, sectorData] of Object.entries(sectors)) {
+      if ((sectorData as any).name === sector) {
+        targetSector = sectorData
+        break
+      }
+    }
+
+    if (!targetSector || !targetSector.symbols || targetSector.symbols.length === 0) {
+      res.write('data: ' + JSON.stringify({ error: 'Sector not found', type: 'error' }) + '\n\n')
+      res.end()
+      return
+    }
+
+    // Evaluate with progress callback
+    const results = await evaluateStocksSequentially(
+      targetSector.symbols,
+      (current, total, result) => {
+        if (result) {
+          res.write('data: ' + JSON.stringify({ type: 'progress', result, current, total }) + '\n\n')
+        }
+      }
+    )
+
+    // Send final results for sorting
+    const sorted = results.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore)
+    res.write('data: ' + JSON.stringify({ type: 'complete', results: sorted }) + '\n\n')
+    res.end()
+  } catch (error) {
+    console.error('Error in sector-stream:', error)
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.write('data: ' + JSON.stringify({ error: 'Failed to evaluate sector', type: 'error' }) + '\n\n')
+    res.end()
+  }
+})
+
+// GET /api/evaluate/industry-stream - Server-Sent Events for streaming results
+app.get('/api/evaluate/industry-stream', async (req: Request, res: Response) => {
+  try {
+    const industry = req.query.industry as string
+    if (!industry) {
+      res.setHeader('Content-Type', 'text/event-stream')
+      res.setHeader('Cache-Control', 'no-cache')
+      res.setHeader('Connection', 'keep-alive')
+      res.setHeader('Access-Control-Allow-Origin', '*')
+      res.write('data: ' + JSON.stringify({ error: 'Industry name required', type: 'error' }) + '\n\n')
+      res.end()
+      return
+    }
+
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.setHeader('Access-Control-Allow-Origin', '*')
+
+    const industries = await SectorBuilder.getIndustries()
+    
+    // Find the industry
+    let targetIndustry: any = null
+    for (const [_, industryData] of Object.entries(industries)) {
+      if ((industryData as any).name === industry) {
+        targetIndustry = industryData
+        break
+      }
+    }
+
+    if (!targetIndustry || !targetIndustry.symbols || targetIndustry.symbols.length === 0) {
+      res.write('data: ' + JSON.stringify({ error: 'Industry not found', type: 'error' }) + '\n\n')
+      res.end()
+      return
+    }
+
+    // Evaluate with progress callback
+    const results = await evaluateStocksSequentially(
+      targetIndustry.symbols,
+      (current, total, result) => {
+        if (result) {
+          res.write('data: ' + JSON.stringify({ type: 'progress', result, current, total }) + '\n\n')
+        }
+      }
+    )
+
+    // Send final results for sorting
+    const sorted = results.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore)
+    res.write('data: ' + JSON.stringify({ type: 'complete', results: sorted }) + '\n\n')
+    res.end()
+  } catch (error) {
+    console.error('Error in industry-stream:', error)
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.write('data: ' + JSON.stringify({ error: 'Failed to evaluate industry', type: 'error' }) + '\n\n')
+    res.end()
+  }
+})
+
 app.listen(PORT, () => {
   console.log(`Stock Evaluation API running on http://localhost:${PORT}`)
 })
