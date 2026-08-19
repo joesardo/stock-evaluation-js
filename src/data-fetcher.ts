@@ -220,12 +220,12 @@ export class YFinanceDataFetcher {
       // Fetch quote data (price, 52-week range, etc.)
       const quote = await yf.quote(symbol);
       
-      // Fetch summary data for fundamentals
+      // Fetch only necessary summary modules for scoring
+      // This is much faster than fetching all modules
       const modules = [
-        'price',
-        'summaryDetail',
-        'financialData',
-        'defaultKeyStatistics'
+        'financialData',      // ROE, earnings_growth, debt_to_equity, current_ratio
+        'defaultKeyStatistics' // P/B ratio
+        // Removed: 'price' (redundant with quote), 'summaryDetail' (for dividend_yield, but can be in quote)
       ];
       const result = await yf.quoteSummary(symbol, { modules });
       
@@ -253,8 +253,11 @@ export class YFinanceDataFetcher {
     // P/B ratio  
     const pbRatio = safeParse(summary?.defaultKeyStatistics?.priceToBook);
 
-    // Dividend yield (comes as decimal)
-    const dividendYield = safeParse(summary?.summaryDetail?.dividendYield);
+    // Dividend yield - try quote first, then summaryDetail
+    let dividendYield = safeParse(quote.dividendYield);
+    if (dividendYield === null) {
+      dividendYield = safeParse(summary?.summaryDetail?.dividendYield);
+    }
     const dividendYieldPercent = dividendYield ? dividendYield * 100 : 0;
 
     // ROE (comes as decimal)
