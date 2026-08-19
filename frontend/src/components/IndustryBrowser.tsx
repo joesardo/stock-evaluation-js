@@ -58,7 +58,12 @@ const IndustryBrowser = forwardRef(function IndustryBrowser() {
           // Add each result as it arrives
           setResults(prev => {
             const newResults = [...prev, result]
-            return newResults.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore)
+            return newResults.sort((a: any, b: any) => {
+              if (b.piotroskiScore !== a.piotroskiScore) {
+                return b.piotroskiScore - a.piotroskiScore
+              }
+              return b.valueScore - a.valueScore
+            })
           })
           setCurrentStock(result.symbol)
         },

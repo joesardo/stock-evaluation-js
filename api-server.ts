@@ -166,7 +166,13 @@ app.post('/api/evaluate/sector', async (req: Request, res: Response) => {
 
     // Evaluate stocks sequentially to avoid rate limiting
     const results = await evaluateStocksSequentially(targetSector.symbols)
-    res.json(results.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore))
+    const sorted = results.sort((a: any, b: any) => {
+      if (b.piotroskiScore !== a.piotroskiScore) {
+        return b.piotroskiScore - a.piotroskiScore
+      }
+      return b.valueScore - a.valueScore
+    })
+    res.json(sorted)
   } catch (error) {
     res.status(500).json({ error: 'Failed to evaluate sector' })
   }
@@ -197,7 +203,13 @@ app.post('/api/evaluate/industry', async (req: Request, res: Response) => {
 
     // Evaluate stocks sequentially to avoid rate limiting
     const results = await evaluateStocksSequentially(targetIndustry.symbols)
-    res.json(results.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore))
+    const sorted = results.sort((a: any, b: any) => {
+      if (b.piotroskiScore !== a.piotroskiScore) {
+        return b.piotroskiScore - a.piotroskiScore
+      }
+      return b.valueScore - a.valueScore
+    })
+    res.json(sorted)
   } catch (error) {
     res.status(500).json({ error: 'Failed to evaluate industry' })
   }
@@ -213,7 +225,13 @@ app.post('/api/evaluate/watchlist', async (req: Request, res: Response) => {
 
     // Use sequential fetching for watchlist too
     const results = await evaluateStocksSequentially(tickers.map(t => t.toUpperCase()))
-    res.json(results.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore))
+    const sorted = results.sort((a: any, b: any) => {
+      if (b.piotroskiScore !== a.piotroskiScore) {
+        return b.piotroskiScore - a.piotroskiScore
+      }
+      return b.valueScore - a.valueScore
+    })
+    res.json(sorted)
   } catch (error) {
     res.status(500).json({ error: 'Failed to evaluate watchlist' })
   }
@@ -370,8 +388,13 @@ app.get('/api/evaluate/sector-stream', async (req: Request, res: Response) => {
       }
     )
 
-    // Send final results for sorting
-    const sorted = results.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore)
+    // Send final results for sorting (primary: F-score, secondary: value score)
+    const sorted = results.sort((a: any, b: any) => {
+      if (b.piotroskiScore !== a.piotroskiScore) {
+        return b.piotroskiScore - a.piotroskiScore
+      }
+      return b.valueScore - a.valueScore
+    })
     res.write('data: ' + JSON.stringify({ type: 'complete', results: sorted }) + '\n\n')
     res.end()
   } catch (error) {
@@ -431,8 +454,13 @@ app.get('/api/evaluate/industry-stream', async (req: Request, res: Response) => 
       }
     )
 
-    // Send final results for sorting
-    const sorted = results.sort((a: any, b: any) => b.piotroskiScore - a.piotroskiScore)
+    // Send final results for sorting (primary: F-score, secondary: value score)
+    const sorted = results.sort((a: any, b: any) => {
+      if (b.piotroskiScore !== a.piotroskiScore) {
+        return b.piotroskiScore - a.piotroskiScore
+      }
+      return b.valueScore - a.valueScore
+    })
     res.write('data: ' + JSON.stringify({ type: 'complete', results: sorted }) + '\n\n')
     res.end()
   } catch (error) {
