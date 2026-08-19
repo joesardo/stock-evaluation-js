@@ -192,7 +192,7 @@ export class AlphaVantageDataFetcher {
  */
 export class YFinanceDataFetcher {
   private static lastRequestTime = 0;
-  private static readonly MIN_DELAY_MS = 50; // 50ms between requests (minimal throttle for sequential processing)
+  private static readonly MIN_DELAY_MS = 300; // Increased to 300ms for conservative rate limiting with fully sequential processing
   
   private static async throttle() {
     const now = Date.now();
@@ -217,17 +217,14 @@ export class YFinanceDataFetcher {
         validation: { logErrors: false }
       });
       
-      // Fetch quote data (price, 52-week range, etc.)
-      const quote = await yf.quote(symbol);
-      
-      // Fetch only necessary summary modules for scoring
-      // This is much faster than fetching all modules
-      const modules = [
-        'financialData',      // ROE, earnings_growth, debt_to_equity, current_ratio
-        'defaultKeyStatistics' // P/B ratio
-        // Removed: 'price' (redundant with quote), 'summaryDetail' (for dividend_yield, but can be in quote)
-      ];
-      const result = await yf.quoteSummary(symbol, { modules });
+      // Fetch quote and summary data in PARALLEL instead of sequential
+      // This roughly halves the wait time per stock (max(t1, t2) vs t1 + t2)
+      const [quote, result] = await Promise.all([
+        yf.quote(symbol),
+        yf.quoteSummary(symbol, { 
+          modules: ['financialData', 'defaultKeyStatistics']
+        })
+      ]);
       
       return this.parseStockData(symbol, quote, result);
     } catch (error) {

@@ -82,21 +82,21 @@ function getMarketCapCategory(marketCap: number | null): string {
 // Helper function to process stocks in batches with progress callback
 async function evaluateStocksSequentially(
   symbols: string[], 
-  onProgress?: (current: number, total: number) => void
+  onProgress?: (current: number, total: number, result?: any) => void
 ): Promise<any[]> {
   const results: any[] = []
-  const batchSize = 5 // Process in parallel, then move to next batch
+  const batchSize = 1 // Fully sequential (batch size 1) to avoid any parallel API calls to Yahoo Finance
 
   for (let i = 0; i < symbols.length; i += batchSize) {
     const batch = symbols.slice(i, i + batchSize)
     
-    // Process this batch in parallel
+    // Process this batch sequentially
     const batchPromises = batch.map(async (symbol: string) => {
       try {
         const data = await withTimeout(DataFetcher.fetchStockData(symbol), 15000)
         const piotroskiScore = PiotroskiEvaluator.calculateFScore(data)
         const valueScore = ValueEvaluator.calculateValueScore(data)
-        return {
+        const result = {
           symbol,
           company_name: data.company_name,
           piotroskiScore,
@@ -105,9 +105,16 @@ async function evaluateStocksSequentially(
           market_cap_category: getMarketCapCategory(data.market_cap),
           price: data.price
         }
+        
+        // Report individual result immediately for lazy loading
+        if (onProgress) {
+          onProgress(results.length + 1, symbols.length, result)
+        }
+        
+        return result
       } catch (err) {
         console.error(`Failed to fetch ${symbol}: ${err instanceof Error ? err.message : String(err)}`)
-        return {
+        const result = {
           symbol,
           company_name: 'Unknown',
           piotroskiScore: 0,
@@ -116,17 +123,19 @@ async function evaluateStocksSequentially(
           market_cap_category: 'N/A',
           price: 0
         }
+        
+        // Still report even on error
+        if (onProgress) {
+          onProgress(results.length + 1, symbols.length, result)
+        }
+        
+        return result
       }
     })
 
     // Wait for entire batch to complete before moving to next
     const batchResults = await Promise.all(batchPromises)
     results.push(...batchResults)
-    
-    // Report progress after each batch
-    if (onProgress) {
-      onProgress(results.length, symbols.length)
-    }
   }
 
   return results
