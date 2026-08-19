@@ -44,9 +44,15 @@ function App() {
       </header>
 
       <main className="main-content">
-        {view === 'watchlist' && <Watchlist />}
-        {view === 'sectors' && <SectorBrowser ref={sectorBrowserRef} />}
-        {view === 'industries' && <IndustryBrowser ref={industryBrowserRef} />}
+        <div style={{ display: view === 'watchlist' ? 'block' : 'none' }}>
+          <Watchlist />
+        </div>
+        <div style={{ display: view === 'sectors' ? 'block' : 'none' }}>
+          <SectorBrowser ref={sectorBrowserRef} />
+        </div>
+        <div style={{ display: view === 'industries' ? 'block' : 'none' }}>
+          <IndustryBrowser ref={industryBrowserRef} />
+        </div>
       </main>
     </div>
   )
