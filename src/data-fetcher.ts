@@ -6,10 +6,25 @@ dotenv.config();
 
 export class DataFetcher {
   /**
+   * Check if a symbol is unreliable (OTC/Pink sheet with bad data)
+   */
+  private static isUnreliableSymbol(symbol: string): boolean {
+    // OTC/Pink sheet symbols often have:
+    // - 5+ characters (SBHGF, ABBVF, etc.) - these are often ADRs/OTC with corrupted Yahoo data
+    // - Typically much lower liquidity
+    // We'll exclude 5-letter symbols since legitimate US stocks are 1-4 letters
+    return symbol.length >= 5;
+  }
+
+  /**
    * Fetch stock data from Yahoo Finance
    */
   static async fetchStockData(symbol: string): Promise<StockData> {
     try {
+      if (this.isUnreliableSymbol(symbol)) {
+        throw new Error(`Symbol ${symbol} is an OTC/Pink sheet stock with unreliable data - skipping`);
+      }
+
       const yfinanceFetcher = new YFinanceDataFetcher();
       return await yfinanceFetcher.fetchStockData(symbol);
     } catch (error) {
