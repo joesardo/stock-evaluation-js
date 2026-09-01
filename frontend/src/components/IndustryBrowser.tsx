@@ -92,7 +92,7 @@ const IndustryBrowser = forwardRef(function IndustryBrowser() {
       <div className="card">
         <div className="card-title">Browse Industries</div>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.875rem' }}>
-          Explore 83+ granular industry classifications. Select an industry to evaluate all stocks in it.
+          Explore 120+ granular industry classifications. Select an industry to evaluate all stocks in it.
         </p>
 
         <div className="input-group">
