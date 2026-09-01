@@ -113,7 +113,8 @@ async function evaluateStocksSequentially(
         
         return result
       } catch (err) {
-        console.error(`Failed to fetch ${symbol}: ${err instanceof Error ? err.message : String(err)}`)
+        // Silently skip errors for invalid/delisted symbols instead of logging full error
+        // These are typically invalid tickers in TradingView data that don't exist on Yahoo Finance
         const result = {
           symbol,
           company_name: 'Unknown',
