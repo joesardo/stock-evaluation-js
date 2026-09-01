@@ -16,25 +16,43 @@ interface IndustryData {
 }
 
 /**
- * Load sectors directly from TradingView verified data source
- * No rebuild process needed - uses all-stocks-by-sector.json directly
+ * Load sectors and industries directly from TradingView verified data sources
+ * No rebuild process needed - uses all-stocks-by-sector.json and all-stocks-by-industry.json directly
  */
 export class SectorBuilder {
-  private static readonly DATA_PATH = path.join(__dirname, '..', 'all-stocks-by-sector.json');
+  private static readonly SECTORS_PATH = path.join(__dirname, '..', 'all-stocks-by-sector.json');
+  private static readonly INDUSTRIES_PATH = path.join(__dirname, '..', 'all-stocks-by-industry.json');
 
   /**
    * Load sector data directly from TradingView JSON file
    */
   private static loadSectorData(): Record<string, string[]> {
     try {
-      if (!fs.existsSync(this.DATA_PATH)) {
+      if (!fs.existsSync(this.SECTORS_PATH)) {
         console.error('❌ all-stocks-by-sector.json not found. Run: node sectors-fetch.js');
         return {};
       }
 
-      return JSON.parse(fs.readFileSync(this.DATA_PATH, 'utf-8')) as Record<string, string[]>;
+      return JSON.parse(fs.readFileSync(this.SECTORS_PATH, 'utf-8')) as Record<string, string[]>;
     } catch (error) {
       console.error('Error loading sector data:', error);
+      return {};
+    }
+  }
+
+  /**
+   * Load industry data directly from TradingView JSON file
+   */
+  private static loadIndustryData(): Record<string, string[]> {
+    try {
+      if (!fs.existsSync(this.INDUSTRIES_PATH)) {
+        console.error('⚠️  all-stocks-by-industry.json not found. Run: node industries-fetch.js');
+        return {};
+      }
+
+      return JSON.parse(fs.readFileSync(this.INDUSTRIES_PATH, 'utf-8')) as Record<string, string[]>;
+    } catch (error) {
+      console.error('Error loading industry data:', error);
       return {};
     }
   }
@@ -58,70 +76,30 @@ export class SectorBuilder {
   }
 
   /**
-   * Get industries from TradingView sectors by enriching with Yahoo Finance industry classification
-   * This provides more granular classification than sectors
+   * Get industries from TradingView data
+   * Returns industries with sorted symbols
    */
   static async getIndustries(): Promise<IndustryData> {
-    const sectorData = this.loadSectorData();
+    const industryData = this.loadIndustryData();
     
-    // Flatten all stocks from all sectors
-    const allStocks = new Set<string>();
-    for (const symbols of Object.values(sectorData)) {
-      symbols.forEach(s => allStocks.add(s));
-    }
-
-    const yf = require('yahoo-finance2').default;
-    const yfinance = new yf({ suppressNotices: ['yahooSurvey'] });
-
     const industries: IndustryData = {};
-    let successCount = 0;
-    let failureCount = 0;
-
-    console.log(`Fetching industry classification from Yahoo Finance for ${allStocks.size} stocks...\n`);
-
-    for (const symbol of allStocks) {
-      try {
-        const summary = await yfinance.quoteSummary(symbol, {
-          modules: ['assetProfile']
-        });
-
-        const yahooIndustry = summary?.assetProfile?.industry || 'Unknown';
-
-        if (!industries[yahooIndustry]) {
-          industries[yahooIndustry] = {
-            name: yahooIndustry,
-            symbols: []
-          };
-        }
-
-        if (!industries[yahooIndustry].symbols.includes(symbol)) {
-          industries[yahooIndustry].symbols.push(symbol);
-        }
-
-        console.log(`  ✓ ${symbol} → ${yahooIndustry}`);
-        successCount++;
-      } catch (error) {
-        failureCount++;
-        // Silently skip failures to avoid spam
-      }
+    for (const [industryName, symbols] of Object.entries(industryData)) {
+      industries[industryName] = {
+        name: industryName,
+        symbols: (symbols as string[]).sort()
+      };
     }
-
-    console.log(`\n📊 Industry Results: ${successCount} successful, ${failureCount} failed\n`);
-
-    // Sort symbols within each industry
-    Object.values(industries).forEach(industry => {
-      industry.symbols.sort();
-    });
 
     return industries;
   }
 
   /**
-   * Rebuild industries only (sectors load directly from JSON)
-   * Call this if you want fresh industry classification from Yahoo Finance
+   * Rebuild industries from TradingView scanner API
+   * Call this if you want fresh industry classification from TradingView
    */
   static async rebuildIndustries(): Promise<IndustryData> {
-    console.log('🔄 Rebuilding industries from Yahoo Finance...');
+    console.log('🔄 Rebuilding industries from TradingView...');
+    console.log('   Run: node industries-fetch.js');
     return this.getIndustries();
   }
 }

@@ -1,65 +1,85 @@
 # Available Stock Sectors & Industries
 
-This guide lists all available sectors and industries you can use to evaluate groups of stocks at once. Both **sectors and industries are dynamically pulled from Yahoo Finance** based on their official classifications.
+This guide lists all available sectors and industries you can use to evaluate groups of stocks at once. Both **sectors and industries come from TradingView's verified stock classification system**.
 
 ## Two Classification Systems
 
 The tool supports two levels of classification granularity:
 
-### Sectors (12 main categories)
-Broad categories matching Yahoo Finance's main sector classification. Use these for high-level analysis.
+### Sectors (20 TradingView categories)
+Broad categories from TradingView's sector classification. Use these for high-level analysis.
 
-### Industries (80+ granular categories)
-Much more detailed classification system. Use these for focused analysis within specific industries.
+### Industries (129 granular categories)
+Much more detailed classification system with 17,464+ unique stocks. Use these for focused analysis within specific industries.
 
-## Usage
+## Data Sources
 
-### Evaluate by Sector:
+- **Sectors:** `all-stocks-by-sector.json` (cached, from TradingView)
+- **Industries:** `all-stocks-by-industry.json` (cached, from TradingView)
+
+Both files are static data files that can be updated by running the fetch commands.
+
+## Updating Data
+
+### Refresh Sectors:
 ```bash
-npm run dev -- SECTOR_NAME
+npm run fetch:sectors
 ```
 
-### Evaluate by Industry:
+### Refresh Industries:
 ```bash
-npm run dev -- --industry "INDUSTRY_NAME"
+npm run fetch:industries
 ```
 
-Replace `SECTOR_NAME` or `INDUSTRY_NAME` with any names listed below.
-
-**Note:** Industry names may contain spaces. Quote them if needed or use the names exactly as shown.
-
-## Rebuilding Data
-
-### Rebuild Sectors:
-```bash
-npm run dev -- --rebuild-sectors
-```
-
-### Rebuild Industries:
-```bash
-npm run dev -- --rebuild-industries
-```
-
-Both commands fetch data for 200+ stocks and cache the results for performance.
+Both commands fetch data from TradingView's scanner API and may take several minutes to complete (they paginate through thousands of stocks).
 
 ---
 
-## Available Sectors (12 total)
+## Available Sectors (20 total, 5,000+ stocks)
 
 | Sector | Stock Count | Examples |
 |--------|-------------|----------|
-| `Tech` | 36 | AAPL, MSFT, NVDA, INTC, AMD |
-| `Healthcare` | 14 | JNJ, UNH, LLY, PFE, AZN |
-| `Industrial` | 15 | BA, RTX, CAT, GE, HON |
-| `Retail` | 19 | AMZN, WMT, COST, MCD, HD |
-| `Banking` | 17 | JPM, BAC, WFC, GS, MS |
-| `Energy` | 14 | XOM, CVX, COP, OXY, EOG |
-| `Materials` | 15 | NEM, FCX, AA, LYB, APD |
-| `Media` | 10 | GOOGL, META, NFLX, ROKU, SNAP |
-| `RealEstate` | 21 | SPG, KIM, PLD, VICI, EXR |
-| `Staples` | 11 | PG, KO, PEP, WMT, COST |
-| `Utilities` | 14 | NEE, DUK, SO, AEP, EXC |
-| `Unknown` | 3 | Stocks that couldn't be classified by Yahoo Finance |
+| Electronic Technology | 688 | AAPL, MSFT, NVDA, INTC, AMD |
+| Technology Services | 1,218 | GOOGL, META, CRM, ADBE, ZOOM |
+| Finance | 3,022 | JPM, BAC, WFC, GS, BLK |
+| Health Technology | 1,513 | JNJ, UNH, LLY, PFE, ABBV |
+| Retail Trade | 388 | AMZN, WMT, COST, MCD, HD |
+| Producer Manufacturing | 731 | BA, RTX, CAT, GE, HON |
+| Energy Minerals | 415 | XOM, CVX, COP, MPC, EQNR |
+| Consumer Non-Durables | 453 | KO, PEP, MO, PM, TAP |
+| Communications | 157 | T, VZ, TMUS, DISH, CHTR |
+| Utilities | 315 | NEE, DUK, SO, AEP, EXC |
+| Consumer Durables | 366 | F, GM, HLI, VC, NXE |
+| Non-Energy Minerals | 1,617 | NEM, FCX, AA, LYB, APD |
+| Consumer Services | 418 | LVS, WYNN, RCL, CCL, MAR |
+| Industrial Services | 334 | AZO, AAP, TDY, EMR, ROK |
+| Transportation | 314 | LUV, UAL, ALK, MATX, SAIA |
+| Commercial Services | 543 | ADP, PAYX, FAST, JKHY, CBRL |
+| Process Industries | 493 | DOW, DD, LYB, CTXS, TREX |
+| Health Services | 167 | ABT, ISRG, VEEV, INTU, ZVZZT |
+| Distribution Services | 241 | WCC, PSB, UE, LMT, DHI |
+| Miscellaneous | 6,548 | (Various small-cap and micro-cap stocks) |
+
+---
+
+## Available Industries (129 total, 17,464+ unique stocks)
+
+Industries include (sample):
+- Semiconductors & Equipment
+- Software - Application
+- Software - Infrastructure
+- Internet Content & Info
+- Biotechnology
+- Pharmaceutical Preparation
+- Medical Devices & Supplies
+- Banks & Financial Services
+- Real Estate Investment Trusts
+- Auto Manufacturers
+- Airlines
+- Telecommunications Services
+- Electric Utilities
+- Oil, Gas & Consumable Fuels
+- And 114+ more...
 
 ---
 
@@ -67,16 +87,16 @@ Both commands fetch data for 200+ stocks and cache the results for performance.
 
 ### Evaluate a single sector:
 ```bash
-npm run dev -- Tech
+npm run dev -- "Electronic Technology"
 npm run dev -- Healthcare
-npm run dev -- Energy
+npm run dev -- Energy Minerals
 ```
 
-### Evaluate a single industry (more granular):
+### Evaluate a single industry:
 ```bash
-npm run dev -- --industry Semiconductors
+npm run dev -- --industry "Semiconductors & Equipment"
 npm run dev -- --industry "Software - Application"
-npm run dev -- --industry "Auto Manufacturers"
+npm run dev -- --industry "Biotechnology"
 ```
 
 ### Evaluate individual stocks:

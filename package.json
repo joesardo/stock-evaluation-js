@@ -11,6 +11,8 @@
     "evaluate": "ts-node src/index.ts",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
+    "fetch:sectors": "node sectors-fetch.js",
+    "fetch:industries": "node industries-fetch.js",
     "watchlist:list": "ts-node src/cli-watchlist.ts list",
     "watchlist:add": "ts-node src/cli-watchlist.ts add",
     "watchlist:remove": "ts-node src/cli-watchlist.ts remove"
