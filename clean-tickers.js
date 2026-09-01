@@ -1,9 +1,12 @@
 import { readFileSync, writeFileSync } from 'fs';
 
-// Valid ticker format: 1-5 uppercase letters, may include dots (BRK.B, BRK.A)
-// Invalid patterns: slashes, hyphens at start/end, multiple dots, etc.
+// Valid ticker format: 1-4 uppercase letters (or GOOGL as exception)
+// Invalid patterns: slashes, hyphens, 5+ characters (except GOOGL)
 function isValidTicker(ticker) {
   if (!ticker || typeof ticker !== 'string') return false;
+  
+  // Allow GOOGL specifically (legitimate 5-letter ticker)
+  if (ticker === 'GOOGL') return true;
   
   // Reject if contains slash (BOH/PB style)
   if (ticker.includes('/')) return false;
@@ -12,9 +15,12 @@ function isValidTicker(ticker) {
   if (ticker.startsWith('-') || ticker.endsWith('-')) return false;
   if (ticker.startsWith('.') || ticker.endsWith('.')) return false;
   
-  // Allow: 1-5 letters, optional single dot for class shares (BRK.B, BRK.A)
-  // Basic pattern: letters, optionally a dot followed by one letter
-  const validPattern = /^[A-Z]{1,5}(?:\.[A-Z])?$/;
+  // Reject 5+ characters (mostly OTC/ADR stocks with bad data)
+  // They typically end in F, Y, U, Q (SBHGF, ABBVF, etc.)
+  if (ticker.length > 4) return false;
+  
+  // Allow: 1-4 letters, optionally a dot for class shares (BRK.A, BRK.B)
+  const validPattern = /^[A-Z]{1,4}(?:\.[A-Z])?$/;
   return validPattern.test(ticker);
 }
 

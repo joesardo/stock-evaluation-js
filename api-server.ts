@@ -67,14 +67,6 @@ app.get('/api/industries', async (_req: Request, res: Response) => {
   }
 })
 
-// List of ticker patterns/symbols known to have unreliable data
-function isUnreliableSymbol(symbol: string): boolean {
-  // OTC/Pink sheet symbols often have:
-  // - 5+ characters (SBHGF, ABBVF, etc.) - these are ADRs/OTC with bad data
-  // - Legitimate US stocks are typically 1-4 letters
-  return symbol.length >= 5;
-}
-
 // Helper function to classify market cap
 function getMarketCapCategory(marketCap: number | null): string {
   if (!marketCap || marketCap === 0) return 'N/A'
@@ -100,19 +92,6 @@ async function evaluateStocksSequentially(
     
     // Process this batch sequentially
     const batchPromises = batch.map(async (symbol: string) => {
-      // Skip unreliable symbols (OTC/Pink sheet stocks with bad data)
-      if (isUnreliableSymbol(symbol)) {
-        return {
-          symbol,
-          company_name: 'OTC/Unreliable',
-          piotroskiScore: 0,
-          valueScore: 0,
-          market_cap: null,
-          market_cap_category: 'N/A',
-          price: 0
-        }
-      }
-
       try {
         const data = await withTimeout(DataFetcher.fetchStockData(symbol), 15000)
         const piotroskiScore = PiotroskiEvaluator.calculateFScore(data)
