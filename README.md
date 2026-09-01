@@ -5,12 +5,13 @@ A lightweight, free stock evaluation application with CLI and web UI. Analyze pu
 ## Features
 
 - **Free Data Sources**: Uses Yahoo Finance (yfinance) for stock data - no API key required
-- **TradingView Stock Lists**: 5000+ verified stocks organized by 20 TradingView sectors
+- **TradingView Stock Lists**: 11,700+ verified liquid US stocks (cleaned of OTC/Pink sheets)
+- **Comprehensive Industries**: 129 granular industry classifications with 11,400+ stocks
 - **Interactive Web UI**: Beautiful React interface for browsing sectors, industries, and watchlists
-- **Piotroski F-Score Analysis**: Professional fundamental quality scoring
-- **Value Score**: Price-to-book and dividend-adjusted valuation metrics
-- **Sector & Industry Screening**: Evaluate all stocks in a sector or industry
-- **Watchlist Management**: Save and track your favorite stocks
+- **Piotroski F-Score Analysis**: Professional fundamental quality scoring (0-9)
+- **Value Score**: Multi-factor valuation with price positioning, P/E, P/B, and dividend yield
+- **Sector & Industry Screening**: Evaluate all stocks in a sector or industry with streaming results
+- **Watchlist Management**: Save and track your favorite stocks with persistent storage
 - **CLI & Web Interface**: Use the command-line tool or open the web UI (Vite + React)
 
 ## Installation
@@ -56,10 +57,10 @@ npm run dev
 Then open the URL shown in Terminal 2 (usually http://localhost:5174).
 
 The web interface provides:
-- 🌍 Sector Browser - Browse all 20 sectors with sortable stock lists
-- 🏭 Industry Browser - Explore 80+ industries  
-- 📋 Watchlist - Manage your personal stock watchlist
-- 📊 Score Details - View Piotroski F-Score and Value Score breakdowns
+- 🌍 Sector Browser - Browse all 20 TradingView sectors with live streaming evaluation
+- 🏭 Industry Browser - Explore 129 granular industry classifications with instant loading
+- 📋 Watchlist - Manage your personal stock watchlist with real-time scores
+- 📊 Score Details - View Piotroski F-Score and Value Score breakdowns with metric analysis
 
 ### CLI (Command Line)
 
@@ -83,26 +84,13 @@ npm run dev -- --top 10
 ```
 
 Available sectors (20 TradingView sectors):
-- Electronic Technology
-- Technology Services
-- Finance
-- Health Technology
-- Retail Trade
-- Producer Manufacturing
-- Energy Minerals
-- Consumer Non-Durables
-- Communications
-- Utilities
-- Consumer Durables
-- Non-Energy Minerals
-- Consumer Services
-- Industrial Services
-- Transportation
-- Commercial Services
-- Process Industries
-- Health Services
-- Distribution Services
-- Miscellaneous
+See [docs/SECTORS.md](docs/SECTORS.md) for the complete list of sectors and 129 industries.
+
+**Key Features of Data:**
+- ✅ **Cleaned Data**: Removed 11,184 OTC/Pink sheet tickers with unreliable Yahoo Finance data
+- ✅ **Liquid Stocks Only**: Excludes 5+ character tickers (SBHGF, ABBVF, etc.) except GOOGL
+- ✅ **Industry Classification**: Full 129-industry breakdown from TradingView
+- ✅ **No API Keys**: All data from free sources (TradingView Scanner, Yahoo Finance)
 
 ## Configuration
 
@@ -140,58 +128,74 @@ The evaluation criteria are defined in `config/evaluation-criteria.json`. Each m
 ## Data Sources
 
 **Stock Lists**: [TradingView Scanner API](https://www.tradingview.com/markets/stocks-usa/sectorandindustry-sector/)
-- 20 TradingView sectors
-- 5000+ verified US stocks
+- 20 TradingView sectors with 11,767 stocks (cleaned)
+- 129 granular industries with 11,493 stocks (cleaned)
+- Cleaned to remove OTC, Pink sheets, and 5+ char tickers (except GOOGL)
 - Pre-sorted by market cap
-- Updated via `node sectors-fetch.js`
+- Updated via `npm run fetch:sectors` or `npm run fetch:industries`
 
 **Stock Fundamentals**: [Yahoo Finance (yfinance)](https://finance.yahoo.com/)
-- Piotroski F-Score components
+- Piotroski F-Score components (ROE, margins, cash flow, etc.)
 - Price-to-book ratio
-- Dividend yields
-- Company profiles
-- Industry classification
+- Dividend yields (capped at 20% to prevent data errors)
+- Company profiles and current pricing
+- 52-week high/low for value positioning
+
+**Data Validation**:
+- Removed 11,184 invalid tickers (OTC/ADR with bad data)
+- Dividend yields capped at 20% (Yahoo Finance often returns 200%+ for delisted stocks)
+- 52-week price position drives value scoring (35% weight)
 
 ## Updating Stock Lists
 
-When you want to refresh the list of stocks from TradingView:
+When you want to refresh the lists from TradingView:
 
 ```bash
-node sectors-fetch.js
+# Fetch all sectors
+npm run fetch:sectors
+
+# Fetch all industries
+npm run fetch:industries
+
+# Clean invalid tickers (OTC/Pink sheets, bad data)
+node clean-tickers.js
 ```
 
-This fetches all 5000+ verified stocks from TradingView's 20 sectors and saves them to `all-stocks-by-sector.json`. The app loads this data instantly on startup—no rebuild process needed.
+These commands fetch data from TradingView's scanner API:
+- `all-stocks-by-sector.json` - 20 sectors with 11,767 stocks
+- `all-stocks-by-industry.json` - 129 industries with 11,493 stocks
+
+The `clean-tickers.js` script removes invalid tickers (OTC symbols, 5+ chars except GOOGL) and caches the cleaned data.
 
 ## Project Structure
 
 ```
 stock-evaluation-js/
 ├── src/
-│   ├── index.ts              # CLI entry point
-│   ├── api.ts                # Express REST API
-│   ├── calculator.ts         # Piotroski F-Score & Value Score
-│   ├── sector-builder.ts     # Load sectors from TradingView JSON
-│   ├── piotroski-evaluator.ts # F-Score calculation
-│   ├── value-evaluator.ts    # Value score calculation
-│   ├── data-fetcher.ts       # Yahoo Finance data retrieval
-│   ├── watchlist-manager.ts  # Watchlist CRUD
-│   └── types.ts              # TypeScript interfaces
-├── frontend/                 # React UI (Vite)
+│   ├── index.ts                 # CLI entry point
+│   ├── api-server.ts            # Express REST API server
+│   ├── sector-builder.ts        # Load sectors/industries from JSON (cached)
+│   ├── piotroski-evaluator.ts   # F-Score calculation
+│   ├── value-evaluator.ts       # Value score calculation (reweighted metrics)
+│   ├── data-fetcher.ts          # Yahoo Finance data retrieval with validation
+│   ├── watchlist-manager.ts     # Watchlist CRUD operations
+│   └── types.ts                 # TypeScript interfaces
+├── frontend/
 │   ├── src/
 │   │   ├── App.tsx
-│   │   ├── pages/
-│   │   │   ├── SectorBrowser.tsx
-│   │   │   ├── IndustryBrowser.tsx
-│   │   │   ├── Watchlist.tsx
-│   │   │   └── ScoreBar.tsx
-│   │   └── main.tsx
+│   │   ├── api.ts               # API client with streaming support
+│   │   └── components/
+│   │       ├── SectorBrowser.tsx    # Streaming evaluation UI
+│   │       ├── IndustryBrowser.tsx  # Instant-load industries
+│   │       └── Watchlist.tsx        # Watchlist management
 │   └── vite.config.ts
 ├── config/
-│   └── evaluation-criteria.json  # Scoring thresholds
-├── cache/
-│   └── (cache files generated at runtime)
-├── all-stocks-by-sector.json    # TradingView stock data (generated)
-├── sectors-fetch.js             # TradingView data fetcher
+│   └── evaluation-criteria.json      # Scoring thresholds
+├── all-stocks-by-sector.json        # TradingView sectors (11,767 stocks, cached)
+├── all-stocks-by-industry.json      # TradingView industries (11,493 stocks, cached)
+├── sectors-fetch.js                 # Sector data fetcher
+├── industries-fetch.js              # Industry data fetcher
+├── clean-tickers.js                 # Remove OTC/invalid tickers
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -218,10 +222,12 @@ Professional fundamental quality metric based on:
 
 ### Value Score (0-100)
 
-Investment value assessment using:
-- Price-to-Book Ratio
-- Dividend Yield
-- Market Cap positioning
+Investment value assessment (reweighted for accuracy):
+- **52-Week Price Position** (35%) - Position near low = good value
+- **Price-to-Earnings Ratio** (20%) - Lower P/E = better value
+- **PEG Ratio** (15%) - P/E relative to growth rate
+- **Price-to-Book Ratio** (15%) - Lower P/B = trading below book value
+- **Dividend Yield** (15%) - Capped at 20% to prevent data errors
 
 **Interpretation:**
 - 90-100: Excellent value
@@ -229,6 +235,8 @@ Investment value assessment using:
 - 50-69: Fair value
 - 30-49: Expensive
 - 0-29: Very overvalued
+
+**Note**: Stocks trading near 52-week highs are properly penalized (unlike raw P/E which ignores timing)
 
 ## Configuration
 
@@ -275,10 +283,12 @@ Feel free to submit issues or PRs to:
 
 ## Limitations
 
-- Yahoo Finance data may be delayed by 15-20 minutes
-- Some stocks may fail to fetch (delisted, ticker changes, data gaps)
-- TradingView scanner updates periodically (run `node sectors-fetch.js` to refresh)
-- Web UI requires modern browser
+- Yahoo Finance data may be delayed by 15-20 minutes (market data lags)
+- Some stocks may fail to fetch (recently delisted, data gaps, delisted companies)
+- Historical data not available - only current prices and trailing 12-month metrics
+- TradingView data updates periodically (run `npm run fetch:sectors` or `npm run fetch:industries` to refresh)
+- Web UI requires ES2020+ support (Chrome 91+, Firefox 89+, Safari 14+)
+- No support for crypto, forex, or international exchanges (US stocks only)
 
 ## Future Enhancements
 
