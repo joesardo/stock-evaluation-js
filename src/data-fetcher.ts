@@ -255,7 +255,8 @@ export class YFinanceDataFetcher {
     if (dividendYield === null) {
       dividendYield = safeParse(summary?.summaryDetail?.dividendYield);
     }
-    const dividendYieldPercent = dividendYield ? dividendYield * 100 : 0;
+    // Sanity check: cap dividend yield at 20% (anything higher is likely a data error)
+    const dividendYieldPercent = dividendYield ? Math.min(dividendYield * 100, 20) : 0;
 
     // ROE (comes as decimal)
     const roe = safeParse(summary?.financialData?.returnOnEquity);

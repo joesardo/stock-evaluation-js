@@ -13,9 +13,9 @@ export class ValueEvaluator {
   static calculateValueScore(stock: StockData): number {
     const scores: { [key: string]: number } = {};
     const weights: { [key: string]: number } = {
-      pe_value: 0.25,      // Price-to-Earnings value
-      peg_value: 0.20,     // PEG ratio value (P/E relative to growth)
-      price_position: 0.25, // 52-week position (low = better value)
+      pe_value: 0.20,      // Price-to-Earnings value
+      peg_value: 0.15,     // PEG ratio value (P/E relative to growth)
+      price_position: 0.35, // 52-week position (low = better value) - INCREASED importance
       pb_value: 0.15,      // Price-to-Book value
       dividend_yield: 0.15  // Dividend yield (income)
     };
