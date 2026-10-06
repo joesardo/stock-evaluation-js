@@ -1,10 +1,14 @@
 import { useState, useEffect, forwardRef } from 'react'
-import { api } from '../api'
+import { api, RatesRegime } from '../api'
 import { ScoreIndicator } from './ScoreBar'
 
 interface Industry {
   name: string
   count: number
+}
+
+interface IndustryBrowserProps {
+  ratesRegime?: RatesRegime | null
 }
 
 const GROUP_ORDER = [
@@ -153,7 +157,34 @@ function getIndustryGroup(name: string): string {
   return 'Other'
 }
 
-const IndustryBrowser = forwardRef(function IndustryBrowser() {
+function getGroupRatesOutlook(group: string, regime: RatesRegime | null | undefined) {
+  if (!regime) {
+    return { emoji: 'ℹ️', label: 'Rates outlook unavailable', color: 'var(--text-secondary)' }
+  }
+
+  const isHigh = regime.level === 'high'
+  const isLow = regime.level === 'low'
+  const isRising = regime.trend === 'rising'
+  const isFalling = regime.trend === 'falling'
+
+  const positiveInHighRates = new Set(['Financials', 'Energy'])
+  const negativeInHighRates = new Set(['Real Estate', 'Utilities', 'Consumer', 'Technology'])
+  const positiveInFallingRates = new Set(['Real Estate', 'Utilities', 'Technology', 'Consumer'])
+
+  if ((isHigh || isRising) && positiveInHighRates.has(group)) {
+    return { emoji: '🟢', label: 'Typically favored in high/rising rates', color: '#10b981' }
+  }
+  if ((isHigh || isRising) && negativeInHighRates.has(group)) {
+    return { emoji: '🟡', label: 'Can face pressure in high/rising rates', color: '#f59e0b' }
+  }
+  if ((isLow || isFalling) && positiveInFallingRates.has(group)) {
+    return { emoji: '🟢', label: 'Typically favored in low/falling rates', color: '#10b981' }
+  }
+
+  return { emoji: '⚪', label: 'Mixed rate sensitivity', color: 'var(--text-secondary)' }
+}
+
+const IndustryBrowser = forwardRef(function IndustryBrowser({ ratesRegime }: IndustryBrowserProps) {
   const [industries, setIndustries] = useState<Industry[]>([])
   const [selectedIndustry, setSelectedIndustry] = useState<string>('')
   const [searchTerm, setSearchTerm] = useState('')
@@ -259,7 +290,7 @@ const IndustryBrowser = forwardRef(function IndustryBrowser() {
       <div className="card">
         <div className="card-title">Browse Industries</div>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.875rem' }}>
-          Explore 120+ granular industry classifications. Select an industry to evaluate all stocks in it.
+          Explore 120+ granular industry classifications. Group headers include rates-sensitive outlook indicators based on the live rates regime.
         </p>
 
         <div className="input-group">
@@ -279,19 +310,29 @@ const IndustryBrowser = forwardRef(function IndustryBrowser() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {sortedGroups.map(({ group, items, totalStocks }) => (
               <div key={group}>
+                {(() => {
+                  const outlook = getGroupRatesOutlook(group, ratesRegime)
+                  return (
                 <div style={{
                   display: 'flex',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   justifyContent: 'space-between',
                   marginBottom: '0.6rem',
                   paddingBottom: '0.4rem',
                   borderBottom: '1px solid var(--border)'
                 }}>
-                  <h3 style={{ margin: 0, fontSize: '1rem' }}>{group}</h3>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1rem' }}>{group}</h3>
+                    <div style={{ fontSize: '0.78rem', color: outlook.color, marginTop: '0.2rem' }}>
+                      {outlook.emoji} {outlook.label}
+                    </div>
+                  </div>
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
                     {items.length} industries · {totalStocks.toLocaleString()} stocks
                   </span>
                 </div>
+                  )
+                })()}
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
                   {items.map((industry) => (

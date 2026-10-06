@@ -79,6 +79,31 @@
   width: 100%;
 }
 
+.rates-panel {
+  margin-bottom: 1.25rem;
+}
+
+.rates-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.rates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+}
+
+.rates-item {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
 @media (max-width: 768px) {
   .main-content {
     padding: 1rem;
@@ -99,5 +124,10 @@
 
   .quote-search-form input {
     min-width: 0;
+  }
+
+  .rates-panel-header {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

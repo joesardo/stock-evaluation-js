@@ -1,9 +1,11 @@
-import { FormEvent, useRef, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
+import { api, RatesSnapshot } from './api'
 import Watchlist from './components/Watchlist'
 import SectorBrowser from './components/SectorBrowser'
 import IndustryBrowser from './components/IndustryBrowser'
 import QuoteLookup from './components/QuoteLookup'
+import RatesPanel from './components/RatesPanel'
 
 type View = 'watchlist' | 'sectors' | 'industries' | 'quote'
 
@@ -11,9 +13,29 @@ function App() {
   const [view, setView] = useState<View>('sectors')
   const [quoteInput, setQuoteInput] = useState('')
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null)
+  const [rates, setRates] = useState<RatesSnapshot | null>(null)
+  const [ratesLoading, setRatesLoading] = useState(false)
+  const [ratesError, setRatesError] = useState('')
   // Store component instances to preserve state when switching tabs
   const sectorBrowserRef = useRef<any>(null)
   const industryBrowserRef = useRef<any>(null)
+
+  const loadRates = useCallback(async () => {
+    try {
+      setRatesLoading(true)
+      setRatesError('')
+      const snapshot = await api.getRates()
+      setRates(snapshot)
+    } catch (err) {
+      setRatesError(err instanceof Error ? err.message : 'Failed to load rates')
+    } finally {
+      setRatesLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadRates()
+  }, [loadRates])
 
   const onQuoteSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -69,6 +91,13 @@ function App() {
       </header>
 
       <main className="main-content">
+        <RatesPanel
+          rates={rates}
+          loading={ratesLoading}
+          error={ratesError}
+          onRefresh={loadRates}
+        />
+
         <div style={{ display: view === 'watchlist' ? 'block' : 'none' }}>
           <Watchlist />
         </div>
@@ -76,7 +105,7 @@ function App() {
           <SectorBrowser ref={sectorBrowserRef} />
         </div>
         <div style={{ display: view === 'industries' ? 'block' : 'none' }}>
-          <IndustryBrowser ref={industryBrowserRef} />
+          <IndustryBrowser ref={industryBrowserRef} ratesRegime={rates?.regime ?? null} />
         </div>
         <div style={{ display: view === 'quote' ? 'block' : 'none' }}>
           <QuoteLookup symbol={selectedQuote} />

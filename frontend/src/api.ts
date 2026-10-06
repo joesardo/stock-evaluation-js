@@ -57,7 +57,43 @@ export interface DetailedQuote {
   }
 }
 
+export interface RatePoint {
+  symbol: string
+  label: string
+  yield: number | null
+  changePct: number | null
+}
+
+export interface RatesRegime {
+  level: 'high' | 'normal' | 'low'
+  trend: 'rising' | 'falling' | 'stable'
+  curve: 'inverted' | 'normal' | 'steep'
+  summary: string
+}
+
+export interface RatesSnapshot {
+  timestamp: string
+  rates: {
+    threeMonth: RatePoint
+    fiveYear: RatePoint
+    tenYear: RatePoint
+    thirtyYear: RatePoint
+  }
+  regime: RatesRegime
+}
+
 export const api = {
+  async getRates(): Promise<RatesSnapshot> {
+    const response = await fetch(`${API_URL}/market/rates`)
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data?.error || 'Failed to fetch market rates')
+    }
+
+    return data
+  },
+
   async getQuote(query: string): Promise<DetailedQuote> {
     const response = await fetch(`${API_URL}/evaluate/symbol/${encodeURIComponent(query.trim())}`)
     const data = await response.json()

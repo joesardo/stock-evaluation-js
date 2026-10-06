@@ -33,6 +33,42 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 15000): P
   }
 }
 
+function normalizeYield(symbol: string, rawValue: number | null): number | null {
+  if (rawValue === null || Number.isNaN(rawValue)) return null
+  // Yahoo often returns ^IRX/^TNX/^TYX as yield * 10 (e.g., 42.5 => 4.25%)
+  if ((symbol === '^IRX' || symbol === '^FVX' || symbol === '^TNX' || symbol === '^TYX') && rawValue > 20) {
+    return rawValue / 10
+  }
+  return rawValue
+}
+
+function getRatesRegime(threeMonth: number | null, tenYear: number | null, shortChange: number | null, tenYearChange: number | null) {
+  const avgChange = [shortChange, tenYearChange].filter((v): v is number => v !== null)
+  const trendBasis = avgChange.length ? avgChange.reduce((a, b) => a + b, 0) / avgChange.length : 0
+
+  let trend: 'rising' | 'falling' | 'stable' = 'stable'
+  if (trendBasis > 0.35) trend = 'rising'
+  else if (trendBasis < -0.35) trend = 'falling'
+
+  let level: 'high' | 'normal' | 'low' = 'normal'
+  if (tenYear !== null && tenYear >= 4.0) level = 'high'
+  else if (tenYear !== null && tenYear <= 2.5) level = 'low'
+
+  let curve: 'inverted' | 'normal' | 'steep' = 'normal'
+  if (threeMonth !== null && tenYear !== null) {
+    const spread = tenYear - threeMonth
+    if (spread < -0.25) curve = 'inverted'
+    else if (spread > 1.5) curve = 'steep'
+  }
+
+  return {
+    level,
+    trend,
+    curve,
+    summary: `${level.toUpperCase()} rates, ${trend.toUpperCase()} trend, ${curve.toUpperCase()} curve`
+  }
+}
+
 // GET /api/sectors
 app.get('/api/sectors', async (_req: Request, res: Response) => {
   try {
@@ -64,6 +100,56 @@ app.get('/api/industries', async (_req: Request, res: Response) => {
     res.json(result)
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch industries' })
+  }
+})
+
+// GET /api/market/rates
+app.get('/api/market/rates', async (_req: Request, res: Response) => {
+  try {
+    const YahooFinance = require('yahoo-finance2').default
+    const yf = new YahooFinance({
+      suppressNotices: ['yahooSurvey'],
+      validation: { logErrors: false }
+    })
+
+    const symbols = ['^IRX', '^FVX', '^TNX', '^TYX']
+    const [irx, fvx, tnx, tyx] = await Promise.all(
+      symbols.map((s) => withTimeout(yf.quote(s), 10000))
+    )
+
+    const toRate = (symbol: string, label: string, quote: any) => {
+      const raw = typeof quote?.regularMarketPrice === 'number' ? quote.regularMarketPrice : null
+      return {
+        symbol,
+        label,
+        yield: normalizeYield(symbol, raw),
+        changePct: typeof quote?.regularMarketChangePercent === 'number' ? quote.regularMarketChangePercent : null
+      }
+    }
+
+    const rates = {
+      threeMonth: toRate('^IRX', '3M T-Bill', irx),
+      fiveYear: toRate('^FVX', '5Y Treasury', fvx),
+      tenYear: toRate('^TNX', '10Y Treasury', tnx),
+      thirtyYear: toRate('^TYX', '30Y Treasury', tyx)
+    }
+
+    const regime = getRatesRegime(
+      rates.threeMonth.yield,
+      rates.tenYear.yield,
+      rates.threeMonth.changePct,
+      rates.tenYear.changePct
+    )
+
+    res.json({
+      timestamp: new Date().toISOString(),
+      rates,
+      regime
+    })
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to fetch rates'
+    })
   }
 })
 
