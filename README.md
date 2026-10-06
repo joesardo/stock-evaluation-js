@@ -238,6 +238,16 @@ Investment value assessment (reweighted for accuracy):
 
 **Note**: Stocks trading near 52-week highs are properly penalized (unlike raw P/E which ignores timing)
 
+### Warning Icons & Emojis
+
+The app uses visual warnings in both the CLI output and web UI to highlight potential risk:
+
+- ⚠️ **Downtrend Warning**: Stock is in a meaningful downtrend (for example, significantly negative YTD performance or near 52-week lows). This means it may look "cheap" for a reason.
+- 🚨 **Value-Trap Risk**: Stronger warning when downtrend signals are combined with weaker fundamentals and/or extreme leverage. Value scores are adjusted downward in these cases.
+- 📈 / 📉 **YTD Trend Indicator**: Quick year-to-date direction marker next to performance (up vs down).
+
+**How to use this:** If you see ⚠️ or 🚨, treat a high Value Score as a starting point for deeper due diligence—not an automatic buy signal.
+
 ## Configuration
 
 Edit `config/evaluation-criteria.json` to customize scoring thresholds.
