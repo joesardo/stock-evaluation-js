@@ -7,6 +7,152 @@ interface Industry {
   count: number
 }
 
+const GROUP_ORDER = [
+  'Technology',
+  'Financials',
+  'Healthcare',
+  'Consumer',
+  'Energy',
+  'Industrials',
+  'Materials',
+  'Utilities',
+  'Transportation',
+  'Media & Telecom',
+  'Real Estate',
+  'Distribution',
+  'Other'
+]
+
+function getIndustryGroup(name: string): string {
+  const n = name.toLowerCase()
+
+  if (
+    n.includes('semiconductor') ||
+    n.includes('computer') ||
+    n.includes('software') ||
+    n.includes('information technology') ||
+    n.includes('data processing') ||
+    n.includes('electronic') ||
+    n.includes('internet')
+  ) return 'Technology'
+
+  if (
+    n.includes('bank') ||
+    n.includes('insurance') ||
+    n.includes('investment') ||
+    n.includes('financial') ||
+    n.includes('finance') ||
+    n.includes('leasing') ||
+    n.includes('trusts/mutual funds')
+  ) return 'Financials'
+
+  if (
+    n.includes('pharmaceutical') ||
+    n.includes('biotech') ||
+    n.includes('medical') ||
+    n.includes('health') ||
+    n.includes('hospital') ||
+    n.includes('nursing')
+  ) return 'Healthcare'
+
+  if (
+    n.includes('retail') ||
+    n.includes('store') ||
+    n.includes('restaurant') ||
+    n.includes('apparel') ||
+    n.includes('footwear') ||
+    n.includes('consumer') ||
+    n.includes('food') ||
+    n.includes('beverages') ||
+    n.includes('tobacco') ||
+    n.includes('hotel') ||
+    n.includes('resort') ||
+    n.includes('cruise') ||
+    n.includes('gaming') ||
+    n.includes('home furnishings') ||
+    n.includes('home improvement')
+  ) return 'Consumer'
+
+  if (
+    n.includes('oil') ||
+    n.includes('gas') ||
+    n.includes('coal') ||
+    n.includes('drilling') ||
+    n.includes('refining') ||
+    n.includes('oilfield') ||
+    n.includes('pipeline')
+  ) return 'Energy'
+
+  if (
+    n.includes('industrial') ||
+    n.includes('machinery') ||
+    n.includes('manufacturing') ||
+    n.includes('aerospace') ||
+    n.includes('defense') ||
+    n.includes('building products') ||
+    n.includes('engineering') ||
+    n.includes('construction') ||
+    n.includes('commercial services') ||
+    n.includes('office equipment') ||
+    n.includes('tools & hardware')
+  ) return 'Industrials'
+
+  if (
+    n.includes('steel') ||
+    n.includes('metals') ||
+    n.includes('minerals') ||
+    n.includes('aluminum') ||
+    n.includes('chemicals') ||
+    n.includes('forest products') ||
+    n.includes('pulp') ||
+    n.includes('paper') ||
+    n.includes('textiles') ||
+    n.includes('packaging') ||
+    n.includes('construction materials')
+  ) return 'Materials'
+
+  if (
+    n.includes('utilities') ||
+    n.includes('power generation') ||
+    n.includes('gas distributors') ||
+    n.includes('water utilities')
+  ) return 'Utilities'
+
+  if (
+    n.includes('railroad') ||
+    n.includes('transportation') ||
+    n.includes('air freight') ||
+    n.includes('airlines') ||
+    n.includes('shipping') ||
+    n.includes('trucking') ||
+    n.includes('courier')
+  ) return 'Transportation'
+
+  if (
+    n.includes('telecommunications') ||
+    n.includes('cable') ||
+    n.includes('satellite') ||
+    n.includes('broadcasting') ||
+    n.includes('publishing') ||
+    n.includes('media') ||
+    n.includes('advertising')
+  ) return 'Media & Telecom'
+
+  if (
+    n.includes('real estate') ||
+    n.includes('reit') ||
+    n.includes('homebuilding')
+  ) return 'Real Estate'
+
+  if (
+    n.includes('distributor') ||
+    n.includes('distribution') ||
+    n.includes('wholesale')
+  ) return 'Distribution'
+
+  return 'Other'
+}
+
 const IndustryBrowser = forwardRef(function IndustryBrowser() {
   const [industries, setIndustries] = useState<Industry[]>([])
   const [selectedIndustry, setSelectedIndustry] = useState<string>('')
@@ -43,6 +189,27 @@ const IndustryBrowser = forwardRef(function IndustryBrowser() {
   const filteredIndustries = industries.filter(ind =>
     ind.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const groupedIndustries = filteredIndustries.reduce<Record<string, Industry[]>>((acc, industry) => {
+    const group = getIndustryGroup(industry.name)
+    if (!acc[group]) acc[group] = []
+    acc[group].push(industry)
+    return acc
+  }, {})
+
+  const sortedGroups = Object.entries(groupedIndustries)
+    .map(([group, items]) => ({
+      group,
+      items: [...items].sort((a, b) => a.name.localeCompare(b.name)),
+      totalStocks: items.reduce((sum, i) => sum + i.count, 0)
+    }))
+    .sort((a, b) => {
+      const aIndex = GROUP_ORDER.indexOf(a.group)
+      const bIndex = GROUP_ORDER.indexOf(b.group)
+      const normalizedA = aIndex === -1 ? GROUP_ORDER.length : aIndex
+      const normalizedB = bIndex === -1 ? GROUP_ORDER.length : bIndex
+      return normalizedA - normalizedB
+    })
 
   const evaluateIndustry = async (industryName: string) => {
     try {
@@ -109,24 +276,44 @@ const IndustryBrowser = forwardRef(function IndustryBrowser() {
             {searchTerm ? 'No industries match your search' : 'No industries available'}
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
-            {filteredIndustries.map((industry) => (
-              <button
-                key={industry.name}
-                className="card"
-                onClick={() => setSelectedIndustry(industry.name)}
-                style={{
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  border: selectedIndustry === industry.name ? '2px solid var(--primary)' : '1px solid var(--border)',
-                  backgroundColor: selectedIndustry === industry.name ? 'var(--bg-tertiary)' : 'transparent',
-                }}
-              >
-                <div className="card-title" style={{ fontSize: '0.95rem' }}>{industry.name}</div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                  {industry.count} stocks
-                </p>
-              </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {sortedGroups.map(({ group, items, totalStocks }) => (
+              <div key={group}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '0.6rem',
+                  paddingBottom: '0.4rem',
+                  borderBottom: '1px solid var(--border)'
+                }}>
+                  <h3 style={{ margin: 0, fontSize: '1rem' }}>{group}</h3>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                    {items.length} industries · {totalStocks.toLocaleString()} stocks
+                  </span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
+                  {items.map((industry) => (
+                    <button
+                      key={industry.name}
+                      className="card"
+                      onClick={() => setSelectedIndustry(industry.name)}
+                      style={{
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        border: selectedIndustry === industry.name ? '2px solid var(--primary)' : '1px solid var(--border)',
+                        backgroundColor: selectedIndustry === industry.name ? 'var(--bg-tertiary)' : 'transparent',
+                      }}
+                    >
+                      <div className="card-title" style={{ fontSize: '0.95rem' }}>{industry.name}</div>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                        {industry.count} stocks
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}
