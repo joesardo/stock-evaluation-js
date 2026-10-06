@@ -1,4 +1,4 @@
-import { useState, useEffect, forwardRef } from 'react'
+import { useState, useEffect, forwardRef, useRef } from 'react'
 import { api, RatesRegime } from '../api'
 import { ScoreIndicator } from './ScoreBar'
 
@@ -269,12 +269,14 @@ function getIndustryRatesOutlook(industryName: string, regime: RatesRegime | nul
 const IndustryBrowser = forwardRef(function IndustryBrowser({ ratesRegime }: IndustryBrowserProps) {
   const [industries, setIndustries] = useState<Industry[]>([])
   const [selectedIndustry, setSelectedIndustry] = useState<string>('')
+  const [isBrowseCollapsed, setIsBrowseCollapsed] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [results, setResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
   const [currentStock, setCurrentStock] = useState<string>('')
+  const resultsRef = useRef<HTMLDivElement | null>(null)
 
   // Load industries from backend
   useEffect(() => {
@@ -328,6 +330,7 @@ const IndustryBrowser = forwardRef(function IndustryBrowser({ ratesRegime }: Ind
     try {
       setLoading(true)
       setShowResults(true)
+      setIsBrowseCollapsed(true)
       setError('')
       setResults([])
       setCurrentStock('')
@@ -363,6 +366,10 @@ const IndustryBrowser = forwardRef(function IndustryBrowser({ ratesRegime }: Ind
     }
   }
 
+  const jumpToResults = () => {
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <div>
       <h2 className="card-title">Industries</h2>
@@ -370,113 +377,142 @@ const IndustryBrowser = forwardRef(function IndustryBrowser({ ratesRegime }: Ind
       {error && <div className="error">{error}</div>}
 
       <div className="card">
-        <div className="card-title">Browse Industries</div>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.875rem' }}>
-          Explore 120+ granular industry classifications. Each industry card includes a rates-sensitive outlook indicator based on the live rates regime.
-        </p>
-
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '0.9rem', fontSize: '0.78rem' }}>
-          Legend: 🟢 Tailwind · 🟩 Mild Tailwind · ⚪ Mixed · 🟧 Mild Headwind · 🔴 Headwind
-        </p>
-
-        <div className="input-group">
-          <input
-            type="search"
-            placeholder="Search industries..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '0.75rem',
+          marginBottom: '0.75rem',
+          flexWrap: 'wrap'
+        }}>
+          <div className="card-title" style={{ marginBottom: 0 }}>Browse Industries</div>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {showResults && results.length > 0 && (
+              <button className="btn btn-secondary" onClick={jumpToResults}>
+                Jump to Results ↓
+              </button>
+            )}
+            <button
+              className="btn"
+              onClick={() => selectedIndustry && evaluateIndustry(selectedIndustry)}
+              disabled={loading || !selectedIndustry}
+              title={selectedIndustry ? `Evaluate ${selectedIndustry}` : 'Select an industry first'}
+            >
+              {loading ? 'Evaluating...' : selectedIndustry ? `📊 Evaluate ${selectedIndustry}` : 'Select Industry to Evaluate'}
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setIsBrowseCollapsed((v) => !v)}
+            >
+              {isBrowseCollapsed ? 'Expand List' : 'Collapse List'}
+            </button>
+          </div>
         </div>
 
-        {loading ? null : filteredIndustries.length === 0 ? (
-          <div style={{ color: 'var(--text-secondary)' }}>
-            {searchTerm ? 'No industries match your search' : 'No industries available'}
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {sortedGroups.map(({ group, items, totalStocks }) => (
-              <div key={group}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '0.6rem',
-                  paddingBottom: '0.4rem',
-                  borderBottom: '1px solid var(--border)'
-                }}>
-                  <h3 style={{ margin: 0, fontSize: '1rem' }}>{group}</h3>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
-                    {items.length} industries · {totalStocks.toLocaleString()} stocks
-                  </span>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
-                  {items.map((industry) => {
-                    const outlook = getIndustryRatesOutlook(industry.name, ratesRegime)
-                    return (
-                      <button
-                        key={industry.name}
-                        className="card"
-                        onClick={() => setSelectedIndustry(industry.name)}
-                        style={{
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          border: selectedIndustry === industry.name ? '2px solid var(--primary)' : '1px solid var(--border)',
-                          backgroundColor: selectedIndustry === industry.name ? 'var(--bg-tertiary)' : 'transparent',
-                        }}
-                      >
-                        <div className="card-title" style={{ fontSize: '0.95rem' }}>{industry.name}</div>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
-                          {industry.count} stocks
-                        </p>
-                        <div
-                          title={`${outlook.label}: ${outlook.reason}`}
-                          style={{ fontSize: '0.92rem', color: outlook.color }}
-                          aria-label={`${outlook.label}: ${outlook.reason}`}
-                        >
-                          {outlook.emoji}
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
+        {selectedIndustry && (
+          <div style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginBottom: '0.8rem' }}>
+            Selected: <strong style={{ color: 'var(--text-primary)' }}>{selectedIndustry}</strong>
           </div>
         )}
 
-        {selectedIndustry && (
-          <div style={{ marginTop: '1.5rem' }}>
-            <button
-              className="btn"
-              onClick={() => evaluateIndustry(selectedIndustry)}
-              disabled={loading}
-            >
-              {loading ? 'Evaluating...' : `📊 Evaluate ${selectedIndustry}`}
-            </button>
+        {!isBrowseCollapsed && (
+          <>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.875rem' }}>
+              Explore 120+ granular industry classifications. Each industry card includes a rates-sensitive outlook indicator based on the live rates regime.
+            </p>
 
-            {loading && (
-              <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                <div style={{
-                  display: 'inline-block',
-                  width: '24px',
-                  height: '24px',
-                  border: '3px solid var(--border)',
-                  borderTop: '3px solid #10b981',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }} />
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                  Fetching stocks...
-                </p>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '0.9rem', fontSize: '0.78rem' }}>
+              Legend: 🟢 Tailwind · 🟩 Mild Tailwind · ⚪ Mixed · 🟧 Mild Headwind · 🔴 Headwind
+            </p>
+
+            <div className="input-group">
+              <input
+                type="search"
+                placeholder="Search industries..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            {loading ? null : filteredIndustries.length === 0 ? (
+              <div style={{ color: 'var(--text-secondary)' }}>
+                {searchTerm ? 'No industries match your search' : 'No industries available'}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {sortedGroups.map(({ group, items, totalStocks }) => (
+                  <div key={group}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '0.6rem',
+                      paddingBottom: '0.4rem',
+                      borderBottom: '1px solid var(--border)'
+                    }}>
+                      <h3 style={{ margin: 0, fontSize: '1rem' }}>{group}</h3>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                        {items.length} industries · {totalStocks.toLocaleString()} stocks
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
+                      {items.map((industry) => {
+                        const outlook = getIndustryRatesOutlook(industry.name, ratesRegime)
+                        return (
+                          <button
+                            key={industry.name}
+                            className="card"
+                            onClick={() => setSelectedIndustry(industry.name)}
+                            style={{
+                              textAlign: 'left',
+                              cursor: 'pointer',
+                              border: selectedIndustry === industry.name ? '2px solid var(--primary)' : '1px solid var(--border)',
+                              backgroundColor: selectedIndustry === industry.name ? 'var(--bg-tertiary)' : 'transparent',
+                            }}
+                          >
+                            <div className="card-title" style={{ fontSize: '0.95rem' }}>{industry.name}</div>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
+                              {industry.count} stocks
+                            </p>
+                            <div
+                              title={`${outlook.label}: ${outlook.reason}`}
+                              style={{ fontSize: '0.92rem', color: outlook.color }}
+                              aria-label={`${outlook.label}: ${outlook.reason}`}
+                            >
+                              {outlook.emoji}
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
+          </>
+        )}
+
+        {loading && (
+          <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+            <div style={{
+              display: 'inline-block',
+              width: '24px',
+              height: '24px',
+              border: '3px solid var(--border)',
+              borderTop: '3px solid #10b981',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }} />
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+              Fetching stocks...
+            </p>
           </div>
         )}
       </div>
 
       {showResults && results.length > 0 && (
-        <div className="card" style={{
+        <div ref={resultsRef} className="card" style={{
           animation: 'fadeIn 0.3s ease-in',
           opacity: 1,
         }}>
