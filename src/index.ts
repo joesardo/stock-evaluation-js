@@ -17,6 +17,73 @@ interface SummaryResult {
   recommendation: string;
 }
 
+async function resolveQueryToSymbol(
+  query: string,
+  options?: { forceSearch?: boolean }
+): Promise<{ symbol: string; matchedName: string | null } | null> {
+  const raw = query.trim();
+  if (!raw) return null;
+
+  const upper = raw.toUpperCase();
+  if (!options?.forceSearch && DataFetcher.isValidSymbol(upper)) {
+    return { symbol: upper, matchedName: null };
+  }
+
+  try {
+    const YahooFinance = require('yahoo-finance2').default;
+    const yf = new YahooFinance({
+      suppressNotices: ['yahooSurvey'],
+      validation: { logErrors: false }
+    });
+
+    const searchResult = await yf.search(raw, {
+      quotesCount: 25,
+      newsCount: 0,
+      enableFuzzyQuery: true
+    });
+
+    const quotes = Array.isArray(searchResult?.quotes) ? searchResult.quotes : [];
+    const normalizedQuery = raw.toUpperCase();
+
+    const candidates = quotes
+      .filter((q: any) => q?.symbol && /^[A-Z]{1,5}$/.test(String(q.symbol).toUpperCase()))
+      .map((q: any) => {
+        const quoteSymbol = String(q.symbol).toUpperCase();
+        const type = String(q.quoteType || q.typeDisp || '').toUpperCase();
+        const shortName = String(q.shortname || '');
+        const longName = String(q.longname || '');
+        const name = `${shortName} ${longName}`.toUpperCase();
+
+        let typeScore = 0;
+        if (type.includes('EQUITY') || type.includes('STOCK')) typeScore = 100;
+        else if (type.includes('ETF')) typeScore = 90;
+        else if (type.includes('MUTUAL') || type.includes('FUND')) typeScore = 80;
+
+        let nameScore = 0;
+        if (quoteSymbol === normalizedQuery) nameScore = 100;
+        else if (quoteSymbol.startsWith(normalizedQuery)) nameScore = 50;
+        else if (name.includes(normalizedQuery)) nameScore = 30;
+
+        return {
+          q,
+          score: typeScore + nameScore,
+          hasPreferredType: typeScore > 0
+        };
+      })
+      .sort((a: any, b: any) => b.score - a.score);
+
+    const match = candidates.find((c: any) => c.hasPreferredType)?.q || candidates[0]?.q;
+    if (!match?.symbol) return null;
+
+    return {
+      symbol: String(match.symbol).toUpperCase(),
+      matchedName: String(match.shortname || match.longname || '') || null
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
 
@@ -160,13 +227,36 @@ async function main() {
   const results: SummaryResult[] = [];
 
   for (const symbol of symbols) {
-    if (!DataFetcher.isValidSymbol(symbol)) {
-      console.error(`❌ Invalid symbol: ${symbol} (must be 1-5 uppercase letters)`);
-      continue;
+    const inputQuery = symbol.trim();
+    let evaluationSymbol = inputQuery.toUpperCase();
+    let matchedName: string | null = null;
+
+    if (!DataFetcher.isValidSymbol(evaluationSymbol)) {
+      const resolved = await resolveQueryToSymbol(inputQuery);
+      if (!resolved) {
+        console.error(`❌ Invalid symbol/query: ${symbol}`);
+        continue;
+      }
+      evaluationSymbol = resolved.symbol;
+      matchedName = resolved.matchedName;
+      console.log(`🔎 Matched "${inputQuery}" -> ${evaluationSymbol}${matchedName ? ` (${matchedName})` : ''}`);
     }
 
     try {
-      const stockData = await DataFetcher.fetchStockData(symbol);
+      let stockData;
+      try {
+        stockData = await DataFetcher.fetchStockData(evaluationSymbol);
+      } catch (directError) {
+        // Fallback: valid-looking input (e.g., APPLE) may still be a company name, not a ticker
+        const resolved = await resolveQueryToSymbol(inputQuery, { forceSearch: true });
+        if (!resolved || resolved.symbol === evaluationSymbol) {
+          throw directError;
+        }
+        evaluationSymbol = resolved.symbol;
+        matchedName = resolved.matchedName;
+        console.log(`🔎 Matched "${inputQuery}" -> ${evaluationSymbol}${matchedName ? ` (${matchedName})` : ''}`);
+        stockData = await DataFetcher.fetchStockData(evaluationSymbol);
+      }
       
       // Calculate Piotroski F-Score (Quality)
       const fScore = PiotroskiEvaluator.calculateFScore(stockData);
@@ -188,7 +278,7 @@ async function main() {
       else recommendation = 'STRONG_SELL';
       
       results.push({
-        symbol: symbol.toUpperCase(),
+        symbol: evaluationSymbol,
         quality_score: qualityScore100,
         value_score: valueScore,
         quality_grade: qualityGrade,
@@ -198,7 +288,7 @@ async function main() {
       
       // Print combined analysis
       console.log(`\n${'━'.repeat(80)}`);
-      console.log(`📊 Stock Analysis: ${symbol.toUpperCase()}`);
+      console.log(`📊 Stock Analysis: ${evaluationSymbol}`);
       console.log(`${'━'.repeat(80)}\n`);
       console.log(`Company: ${stockData.company_name}`);
       console.log(`Current Price: $${stockData.price.toFixed(2)}`);

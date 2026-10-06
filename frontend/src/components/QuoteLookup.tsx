@@ -58,7 +58,7 @@ function QuoteLookup({ symbol }: QuoteLookupProps) {
       <div className="card">
         <div className="card-title">🔎 Quote Search</div>
         <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
-          Search a symbol from the top navigation (example: AAPL, MSFT, MFA).
+          Search a ticker or company name from the top navigation (example: AAPL, Apple, Microsoft, MFA).
         </p>
       </div>
     )
@@ -74,6 +74,13 @@ function QuoteLookup({ symbol }: QuoteLookupProps) {
 
       {quote && (
         <>
+          {quote.query.toUpperCase() !== quote.symbol && (
+            <div className="success">
+              Matched "{quote.query}" to ticker <strong>{quote.symbol}</strong>
+              {quote.matched_name ? ` (${quote.matched_name})` : ''}.
+            </div>
+          )}
+
           <div className="card">
             <div className="card-title">🔎 Quote Analysis: {quote.symbol}</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>

@@ -17,10 +17,10 @@ function App() {
 
   const onQuoteSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const symbol = quoteInput.trim().toUpperCase()
-    if (!symbol) return
+    const query = quoteInput.trim()
+    if (!query) return
 
-    setSelectedQuote(symbol)
+    setSelectedQuote(query)
     setView('quote')
   }
 
@@ -34,7 +34,7 @@ function App() {
               type="search"
               value={quoteInput}
               onChange={(e) => setQuoteInput(e.target.value)}
-              placeholder="Search quote (AAPL, MSFT, MFA...)"
+              placeholder="Search ticker or company (AAPL, Apple, MFA...)"
               aria-label="Search stock symbol"
             />
             <button className="btn" type="submit">Search</button>

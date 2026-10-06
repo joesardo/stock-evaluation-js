@@ -67,13 +67,79 @@ app.get('/api/industries', async (_req: Request, res: Response) => {
   }
 })
 
-// GET /api/evaluate/symbol/:symbol
-app.get('/api/evaluate/symbol/:symbol', async (req: Request, res: Response) => {
+// GET /api/evaluate/symbol/:symbolOrQuery
+app.get('/api/evaluate/symbol/:symbolOrQuery', async (req: Request, res: Response) => {
   try {
-    const symbol = String(req.params.symbol || '').toUpperCase().trim()
+    const rawQuery = String(req.params.symbolOrQuery || '').trim()
+    if (!rawQuery) {
+      return res.status(400).json({ error: 'Symbol or company query is required.' })
+    }
 
-    if (!symbol || !DataFetcher.isValidSymbol(symbol)) {
-      return res.status(400).json({ error: 'Invalid symbol. Use 1-5 uppercase letters.' })
+    let symbol = rawQuery.toUpperCase()
+    let matchedName: string | null = null
+
+    // If user did not provide a direct ticker, resolve it from company-name search
+    if (!DataFetcher.isValidSymbol(symbol)) {
+      const YahooFinance = require('yahoo-finance2').default
+      const yf = new YahooFinance({
+        suppressNotices: ['yahooSurvey'],
+        validation: { logErrors: false }
+      })
+
+      const searchResult = await yf.search(rawQuery, {
+        quotesCount: 25,
+        newsCount: 0,
+        enableFuzzyQuery: true
+      })
+
+      const quotes = Array.isArray(searchResult?.quotes) ? searchResult.quotes : []
+
+      const normalizedQuery = rawQuery.toUpperCase()
+      const candidates = quotes
+        .filter((q: any) => {
+          if (!q?.symbol) return false
+          const quoteSymbol = String(q.symbol).toUpperCase()
+          // Keep symbols compatible with current validation rules
+          return /^[A-Z]{1,5}$/.test(quoteSymbol)
+        })
+        .map((q: any) => {
+          const quoteSymbol = String(q.symbol).toUpperCase()
+          const type = String(q.quoteType || q.typeDisp || '').toUpperCase()
+          const shortName = String(q.shortname || '')
+          const longName = String(q.longname || '')
+          const name = `${shortName} ${longName}`.toUpperCase()
+
+          let typeScore = 0
+          if (type.includes('EQUITY') || type.includes('STOCK')) typeScore = 100
+          else if (type.includes('ETF')) typeScore = 90
+          else if (type.includes('MUTUAL') || type.includes('FUND')) typeScore = 80
+
+          let nameScore = 0
+          if (quoteSymbol === normalizedQuery) nameScore = 100
+          else if (quoteSymbol.startsWith(normalizedQuery)) nameScore = 50
+          else if (name.includes(normalizedQuery)) nameScore = 30
+
+          return {
+            q,
+            score: typeScore + nameScore,
+            hasPreferredType: typeScore > 0
+          }
+        })
+        .sort((a: any, b: any) => b.score - a.score)
+
+      // Prefer stock/ETF/fund matches, then fallback to any ticker-like result
+      const match = candidates.find((c: any) => c.hasPreferredType)?.q || candidates[0]?.q
+
+      if (!match?.symbol) {
+        return res.status(404).json({ error: `No stock ticker match found for "${rawQuery}"` })
+      }
+
+      symbol = String(match.symbol).toUpperCase()
+      matchedName = String(match.shortname || match.longname || '') || null
+    }
+
+    if (!DataFetcher.isValidSymbol(symbol)) {
+      return res.status(400).json({ error: 'Could not resolve a valid stock ticker from input.' })
     }
 
     const data = await withTimeout(DataFetcher.fetchStockData(symbol), 15000)
@@ -94,7 +160,9 @@ app.get('/api/evaluate/symbol/:symbol', async (req: Request, res: Response) => {
     else recommendation = 'STRONG_SELL'
 
     res.json({
+      query: rawQuery,
       symbol,
+      matched_name: matchedName,
       company_name: data.company_name,
       price: data.price,
       ytd_change: data.ytd_change,

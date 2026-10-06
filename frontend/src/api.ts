@@ -24,7 +24,9 @@ export interface IndustryData {
 }
 
 export interface DetailedQuote {
+  query: string
   symbol: string
+  matched_name: string | null
   company_name: string
   price: number
   ytd_change: number | null
@@ -56,8 +58,8 @@ export interface DetailedQuote {
 }
 
 export const api = {
-  async getQuote(symbol: string): Promise<DetailedQuote> {
-    const response = await fetch(`${API_URL}/evaluate/symbol/${encodeURIComponent(symbol.toUpperCase())}`)
+  async getQuote(query: string): Promise<DetailedQuote> {
+    const response = await fetch(`${API_URL}/evaluate/symbol/${encodeURIComponent(query.trim())}`)
     const data = await response.json()
 
     if (!response.ok) {
