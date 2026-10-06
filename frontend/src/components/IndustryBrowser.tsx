@@ -184,6 +184,11 @@ function getGroupRatesOutlook(group: string, regime: RatesRegime | null | undefi
   return { emoji: '⚪', label: 'Mixed rate sensitivity', color: 'var(--text-secondary)' }
 }
 
+function getIndustryRatesOutlook(industryName: string, regime: RatesRegime | null | undefined) {
+  const group = getIndustryGroup(industryName)
+  return getGroupRatesOutlook(group, regime)
+}
+
 const IndustryBrowser = forwardRef(function IndustryBrowser({ ratesRegime }: IndustryBrowserProps) {
   const [industries, setIndustries] = useState<Industry[]>([])
   const [selectedIndustry, setSelectedIndustry] = useState<string>('')
@@ -290,7 +295,7 @@ const IndustryBrowser = forwardRef(function IndustryBrowser({ ratesRegime }: Ind
       <div className="card">
         <div className="card-title">Browse Industries</div>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.875rem' }}>
-          Explore 120+ granular industry classifications. Group headers include rates-sensitive outlook indicators based on the live rates regime.
+          Explore 120+ granular industry classifications. Each industry card includes a rates-sensitive outlook indicator based on the live rates regime.
         </p>
 
         <div className="input-group">
@@ -310,49 +315,45 @@ const IndustryBrowser = forwardRef(function IndustryBrowser({ ratesRegime }: Ind
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {sortedGroups.map(({ group, items, totalStocks }) => (
               <div key={group}>
-                {(() => {
-                  const outlook = getGroupRatesOutlook(group, ratesRegime)
-                  return (
                 <div style={{
                   display: 'flex',
-                  alignItems: 'flex-start',
+                  alignItems: 'center',
                   justifyContent: 'space-between',
                   marginBottom: '0.6rem',
                   paddingBottom: '0.4rem',
                   borderBottom: '1px solid var(--border)'
                 }}>
-                  <div>
-                    <h3 style={{ margin: 0, fontSize: '1rem' }}>{group}</h3>
-                    <div style={{ fontSize: '0.78rem', color: outlook.color, marginTop: '0.2rem' }}>
-                      {outlook.emoji} {outlook.label}
-                    </div>
-                  </div>
+                  <h3 style={{ margin: 0, fontSize: '1rem' }}>{group}</h3>
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
                     {items.length} industries · {totalStocks.toLocaleString()} stocks
                   </span>
                 </div>
-                  )
-                })()}
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
-                  {items.map((industry) => (
-                    <button
-                      key={industry.name}
-                      className="card"
-                      onClick={() => setSelectedIndustry(industry.name)}
-                      style={{
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        border: selectedIndustry === industry.name ? '2px solid var(--primary)' : '1px solid var(--border)',
-                        backgroundColor: selectedIndustry === industry.name ? 'var(--bg-tertiary)' : 'transparent',
-                      }}
-                    >
-                      <div className="card-title" style={{ fontSize: '0.95rem' }}>{industry.name}</div>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                        {industry.count} stocks
-                      </p>
-                    </button>
-                  ))}
+                  {items.map((industry) => {
+                    const outlook = getIndustryRatesOutlook(industry.name, ratesRegime)
+                    return (
+                      <button
+                        key={industry.name}
+                        className="card"
+                        onClick={() => setSelectedIndustry(industry.name)}
+                        style={{
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          border: selectedIndustry === industry.name ? '2px solid var(--primary)' : '1px solid var(--border)',
+                          backgroundColor: selectedIndustry === industry.name ? 'var(--bg-tertiary)' : 'transparent',
+                        }}
+                      >
+                        <div className="card-title" style={{ fontSize: '0.95rem' }}>{industry.name}</div>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
+                          {industry.count} stocks
+                        </p>
+                        <div style={{ fontSize: '0.78rem', color: outlook.color }}>
+                          {outlook.emoji} {outlook.label}
+                        </div>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             ))}

@@ -75,9 +75,9 @@ export interface RatesSnapshot {
   timestamp: string
   rates: {
     threeMonth: RatePoint
-    fiveYear: RatePoint
     tenYear: RatePoint
-    thirtyYear: RatePoint
+    gold: RatePoint
+    crudeOil: RatePoint
   }
   regime: RatesRegime
 }

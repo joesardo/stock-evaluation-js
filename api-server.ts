@@ -35,8 +35,8 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 15000): P
 
 function normalizeYield(symbol: string, rawValue: number | null): number | null {
   if (rawValue === null || Number.isNaN(rawValue)) return null
-  // Yahoo often returns ^IRX/^TNX/^TYX as yield * 10 (e.g., 42.5 => 4.25%)
-  if ((symbol === '^IRX' || symbol === '^FVX' || symbol === '^TNX' || symbol === '^TYX') && rawValue > 20) {
+  // Yahoo often returns ^IRX/^TNX as yield * 10 (e.g., 42.5 => 4.25%)
+  if ((symbol === '^IRX' || symbol === '^TNX') && rawValue > 20) {
     return rawValue / 10
   }
   return rawValue
@@ -112,8 +112,8 @@ app.get('/api/market/rates', async (_req: Request, res: Response) => {
       validation: { logErrors: false }
     })
 
-    const symbols = ['^IRX', '^FVX', '^TNX', '^TYX']
-    const [irx, fvx, tnx, tyx] = await Promise.all(
+    const symbols = ['^IRX', '^TNX', 'GC=F', 'CL=F']
+    const [irx, tnx, gold, crude] = await Promise.all(
       symbols.map((s) => withTimeout(yf.quote(s), 10000))
     )
 
@@ -129,9 +129,9 @@ app.get('/api/market/rates', async (_req: Request, res: Response) => {
 
     const rates = {
       threeMonth: toRate('^IRX', '3M T-Bill', irx),
-      fiveYear: toRate('^FVX', '5Y Treasury', fvx),
       tenYear: toRate('^TNX', '10Y Treasury', tnx),
-      thirtyYear: toRate('^TYX', '30Y Treasury', tyx)
+      gold: toRate('GC=F', 'Gold', gold),
+      crudeOil: toRate('CL=F', 'Crude Oil (WTI)', crude)
     }
 
     const regime = getRatesRegime(
