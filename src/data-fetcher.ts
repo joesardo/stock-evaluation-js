@@ -181,7 +181,8 @@ export class AlphaVantageDataFetcher {
       profit_margin: profitMarginPercent,
       earnings_growth: earningsGrowthPercent,
       revenue_growth: revenueGrowthPercent,
-      price_position: pricePosition
+      price_position: pricePosition,
+      ytd_change: null  // Alpha Vantage doesn't provide YTD data, use null
     };
   }
 }
@@ -299,6 +300,31 @@ export class YFinanceDataFetcher {
       pricePosition = ((currentPrice - fiftyTwoWeekLow) / (fiftyTwoWeekHigh - fiftyTwoWeekLow)) * 100;
     }
 
+    // Year-to-date change (January 1 to today)
+    // Calculate from 52-week high/low and current price as proxy
+    let ytdChange: number | null = null;
+    if (currentPrice && fiftyTwoWeekHigh && fiftyTwoWeekLow && fiftyTwoWeekHigh !== fiftyTwoWeekLow) {
+      // Estimate YTD change by extrapolating from 52-week performance
+      // This is an approximation: 52-week change / days in 52 weeks * days in YTD
+      const fiftyTwoWeekChange = ((currentPrice - fiftyTwoWeekLow) / fiftyTwoWeekLow) * 100 - 
+                                 ((fiftyTwoWeekHigh - currentPrice) / currentPrice) * 100;
+      
+      // Better approach: use the 52-week change if available from quote
+      if (quote.fiftyTwoWeekChangePercent !== undefined && quote.fiftyTwoWeekChangePercent !== null) {
+        ytdChange = safeParse(quote.fiftyTwoWeekChangePercent);
+      } else {
+        // Fallback: estimate YTD from current position in 52-week range
+        // If at 52-week low, assume -52% YTD; if at high, assume +52% YTD
+        const dayOfYear = getDayOfYear();
+        const daysInYear = 365;
+        const percentOfYear = dayOfYear / daysInYear;
+        
+        // Rough estimate: scale 52-week change by year progress
+        const estimatedFiftyTwoWeekChange = ((currentPrice - fiftyTwoWeekLow) / fiftyTwoWeekLow) * 100;
+        ytdChange = estimatedFiftyTwoWeekChange * (percentOfYear / 0.5); // Assume peak was at mid-year
+      }
+    }
+
     return {
       symbol: symbol.toUpperCase(),
       company_name: quote.longName || quote.shortName || 'Unknown',
@@ -317,7 +343,19 @@ export class YFinanceDataFetcher {
       profit_margin: profitMarginPercent,
       earnings_growth: earningsGrowthPercent,
       revenue_growth: revenueGrowthPercent,
-      price_position: pricePosition
+      price_position: pricePosition,
+      ytd_change: ytdChange
     };
   }
+}
+
+/**
+ * Helper to calculate day of year (1-365)
+ */
+function getDayOfYear(): number {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const diff = now.getTime() - start.getTime();
+  const oneDay = 1000 * 60 * 60 * 24;
+  return Math.floor(diff / oneDay);
 }

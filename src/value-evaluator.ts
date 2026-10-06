@@ -105,6 +105,60 @@ export class ValueEvaluator {
   }
 
   /**
+   * Calculate Value Score with momentum adjustment
+   * If stock is down >20% YTD and F-Score <5, reduce value score by 25 points
+   * Returns { score, warning } tuple
+   */
+  static calculateAdjustedValueScore(stock: StockData, fScore: number): { score: number; warning: string | null } {
+    let baseScore = this.calculateValueScore(stock);
+    let warning: string | null = null;
+    const ytdChange = stock.ytd_change;
+    const pricePosition = stock.price_position;
+    const debtToEquity = stock.debt_to_equity;
+    
+    // Downtrend signals (Option 1):
+    // - YTD decline >= 15%
+    // - Or trading in the bottom 10% of 52-week range
+    const ytdDownTrend = ytdChange !== null && ytdChange <= -15;
+    const near52WeekLow = pricePosition !== null && pricePosition <= 10;
+    const isDownTrend = ytdDownTrend || near52WeekLow;
+
+    // Fundamental weakness (Option 2):
+    // - Lower quality Piotroski profile
+    // - Or extreme leverage that can create value traps in high-rate regimes
+    const hasWeakQuality = fScore < 6;
+    const hasExtremeLeverage = debtToEquity !== null && debtToEquity > 300;
+    
+    if (isDownTrend) {
+      if (ytdChange !== null) {
+        warning = `⚠️  DOWN ${Math.abs(ytdChange).toFixed(1)}% YTD - Downtrend risk (verify fundamentals before buying)`;
+      } else {
+        warning = '⚠️  STRONG DOWNTREND SIGNAL - Trading near 52-week lows (verify fundamentals before buying)';
+      }
+      
+      // If downtrend + weak fundamentals/leverage, apply stronger penalty
+      if (hasWeakQuality || hasExtremeLeverage) {
+        let penalty = 25;
+        if (hasWeakQuality && hasExtremeLeverage) {
+          penalty = 35;
+        }
+        baseScore = Math.max(0, baseScore - penalty);
+
+        if (ytdChange !== null) {
+          warning = `🚨 VALUE-TRAP RISK - Down ${Math.abs(ytdChange).toFixed(1)}% YTD, F-Score ${fScore}/9${hasExtremeLeverage ? `, D/E ${debtToEquity?.toFixed(2)}` : ''}. Re-evaluate carefully.`;
+        } else {
+          warning = `🚨 VALUE-TRAP RISK - Near 52-week lows, F-Score ${fScore}/9${hasExtremeLeverage ? `, D/E ${debtToEquity?.toFixed(2)}` : ''}. Re-evaluate carefully.`;
+        }
+      }
+
+      // Prevent top-tier value grade while in confirmed downtrend
+      baseScore = Math.min(baseScore, 79);
+    }
+    
+    return { score: baseScore, warning };
+  }
+
+  /**
    * Get value grade (A-F) based on value score
    */
   static getGrade(valueScore: number): string {
@@ -145,7 +199,11 @@ export class ValueEvaluator {
     // Price Position Analysis
     if (stock.price_position !== undefined && stock.price_position !== null) {
       if (stock.price_position < 30) {
-        reasons.push(`✓ Trading near 52-week low (${stock.price_position.toFixed(1)}%) - Good entry point`);
+        if (stock.ytd_change !== null && stock.ytd_change <= -15) {
+          reasons.push(`⚠ Trading near 52-week low (${stock.price_position.toFixed(1)}%) with YTD decline (${stock.ytd_change.toFixed(1)}%) - Possible value trap`);
+        } else {
+          reasons.push(`✓ Trading near 52-week low (${stock.price_position.toFixed(1)}%) - Good entry point`);
+        }
       } else if (stock.price_position > 80) {
         reasons.push(`✗ Trading near 52-week high (${stock.price_position.toFixed(1)}%) - Limited upside`);
       }

@@ -204,7 +204,14 @@ const IndustryBrowser = forwardRef(function IndustryBrowser() {
                       </span>
                     </td>
                     <td><ScoreIndicator score={stock.piotroskiScore} max={9} /></td>
-                    <td><ScoreIndicator score={stock.valueScore} max={100} /></td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <ScoreIndicator score={stock.valueScore} max={100} />
+                        {stock.valueWarning ? (
+                          <span title={stock.valueWarning} style={{ cursor: 'help' }}>⚠️</span>
+                        ) : null}
+                      </div>
+                    </td>
                   </tr>
                 ))}
             </tbody>

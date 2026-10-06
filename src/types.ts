@@ -17,6 +17,7 @@ export interface StockData {
   earnings_growth: number | null;
   revenue_growth: number | null;
   price_position: number | null;
+  ytd_change: number | null; // Year-to-date price change percentage (-100 to +100)
 }
 
 export interface MetricScore {

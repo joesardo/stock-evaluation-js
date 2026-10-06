@@ -174,8 +174,8 @@ async function main() {
       const qualityReasons = PiotroskiEvaluator.getReasons(stockData, fScore);
       const qualityScore100 = (fScore / 9) * 100;
       
-      // Calculate Value Score
-      const valueScore = ValueEvaluator.calculateValueScore(stockData);
+      // Calculate Value Score with momentum adjustment
+      const { score: valueScore, warning: momentumWarning } = ValueEvaluator.calculateAdjustedValueScore(stockData, fScore);
       const valueGrade = ValueEvaluator.getGrade(valueScore);
       const valueReasons = ValueEvaluator.getReasons(stockData);
       
@@ -201,7 +201,17 @@ async function main() {
       console.log(`📊 Stock Analysis: ${symbol.toUpperCase()}`);
       console.log(`${'━'.repeat(80)}\n`);
       console.log(`Company: ${stockData.company_name}`);
-      console.log(`Current Price: $${stockData.price.toFixed(2)}\n`);
+      console.log(`Current Price: $${stockData.price.toFixed(2)}`);
+      if (stockData.ytd_change !== null) {
+        const ytdColor = stockData.ytd_change >= 0 ? '📈' : '📉';
+        console.log(`YTD Change: ${ytdColor} ${stockData.ytd_change.toFixed(1)}%`);
+      }
+      console.log();
+      
+      // Show momentum warning if applicable
+      if (momentumWarning) {
+        console.log(`${momentumWarning}\n`);
+      }
       
       // Quality (Piotroski)
       console.log(`📈 QUALITY (Piotroski F-Score): ${fScore}/9 ${qualityGrade}`);

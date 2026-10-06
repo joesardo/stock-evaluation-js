@@ -95,12 +95,13 @@ async function evaluateStocksSequentially(
       try {
         const data = await withTimeout(DataFetcher.fetchStockData(symbol), 15000)
         const piotroskiScore = PiotroskiEvaluator.calculateFScore(data)
-        const valueScore = ValueEvaluator.calculateValueScore(data)
+        const { score: valueScore, warning: valueWarning } = ValueEvaluator.calculateAdjustedValueScore(data, piotroskiScore)
         const result = {
           symbol,
           company_name: data.company_name,
           piotroskiScore,
           valueScore,
+          valueWarning,
           market_cap: data.market_cap,
           market_cap_category: getMarketCapCategory(data.market_cap),
           price: data.price

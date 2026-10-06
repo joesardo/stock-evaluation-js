@@ -179,7 +179,14 @@ export default function Watchlist() {
                 <tr key={stock.symbol}>
                   <td><strong>{stock.symbol}</strong></td>
                   <td>{stock.piotroskiScore ? <ScoreIndicator score={stock.piotroskiScore} max={9} /> : '-'}</td>
-                  <td>{stock.valueScore ? <ScoreIndicator score={stock.valueScore} max={100} /> : '-'}</td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      {stock.valueScore ? <ScoreIndicator score={stock.valueScore} max={100} /> : '-'}
+                      {stock.valueWarning ? (
+                        <span title={stock.valueWarning} style={{ cursor: 'help' }}>⚠️</span>
+                      ) : null}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

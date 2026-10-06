@@ -2,8 +2,13 @@ const API_URL = 'http://localhost:3000/api'
 
 export interface Stock {
   symbol: string
+  company_name?: string
   piotroskiScore: number
   valueScore: number
+  valueWarning?: string | null
+  market_cap?: number | null
+  market_cap_category?: string
+  price?: number
   quality?: number
   value?: number
 }
