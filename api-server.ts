@@ -67,6 +67,70 @@ app.get('/api/industries', async (_req: Request, res: Response) => {
   }
 })
 
+// GET /api/evaluate/symbol/:symbol
+app.get('/api/evaluate/symbol/:symbol', async (req: Request, res: Response) => {
+  try {
+    const symbol = String(req.params.symbol || '').toUpperCase().trim()
+
+    if (!symbol || !DataFetcher.isValidSymbol(symbol)) {
+      return res.status(400).json({ error: 'Invalid symbol. Use 1-5 uppercase letters.' })
+    }
+
+    const data = await withTimeout(DataFetcher.fetchStockData(symbol), 15000)
+
+    const piotroskiScore = PiotroskiEvaluator.calculateFScore(data)
+    const piotroskiGrade = PiotroskiEvaluator.getGrade(piotroskiScore)
+    const piotroskiReasons = PiotroskiEvaluator.getReasons(data, piotroskiScore)
+
+    const { score: valueScore, warning: valueWarning } = ValueEvaluator.calculateAdjustedValueScore(data, piotroskiScore)
+    const valueGrade = ValueEvaluator.getGrade(valueScore)
+    const valueReasons = ValueEvaluator.getReasons(data)
+
+    let recommendation = 'HOLD'
+    if (piotroskiScore >= 8) recommendation = 'STRONG_BUY'
+    else if (piotroskiScore >= 6) recommendation = 'BUY'
+    else if (piotroskiScore >= 4) recommendation = 'HOLD'
+    else if (piotroskiScore >= 2) recommendation = 'SELL'
+    else recommendation = 'STRONG_SELL'
+
+    res.json({
+      symbol,
+      company_name: data.company_name,
+      price: data.price,
+      ytd_change: data.ytd_change,
+      market_cap: data.market_cap,
+      market_cap_category: getMarketCapCategory(data.market_cap),
+      recommendation,
+      valueWarning,
+      piotroski: {
+        score: piotroskiScore,
+        grade: piotroskiGrade,
+        reasons: piotroskiReasons
+      },
+      value: {
+        score: valueScore,
+        grade: valueGrade,
+        reasons: valueReasons
+      },
+      metrics: {
+        pe_ratio: data.pe_ratio,
+        pb_ratio: data.pb_ratio,
+        dividend_yield: data.dividend_yield,
+        debt_to_equity: data.debt_to_equity,
+        current_ratio: data.current_ratio,
+        roe: data.roe,
+        earnings_growth: data.earnings_growth,
+        revenue_growth: data.revenue_growth,
+        price_position: data.price_position
+      }
+    })
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to evaluate symbol'
+    })
+  }
+})
+
 // Helper function to classify market cap
 function getMarketCapCategory(marketCap: number | null): string {
   if (!marketCap || marketCap === 0) return 'N/A'

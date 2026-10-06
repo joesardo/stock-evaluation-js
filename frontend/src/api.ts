@@ -23,7 +23,50 @@ export interface IndustryData {
   stocks: Stock[]
 }
 
+export interface DetailedQuote {
+  symbol: string
+  company_name: string
+  price: number
+  ytd_change: number | null
+  market_cap: number | null
+  market_cap_category: string
+  recommendation: string
+  valueWarning: string | null
+  piotroski: {
+    score: number
+    grade: string
+    reasons: string[]
+  }
+  value: {
+    score: number
+    grade: string
+    reasons: string[]
+  }
+  metrics: {
+    pe_ratio: number | null
+    pb_ratio: number | null
+    dividend_yield: number
+    debt_to_equity: number | null
+    current_ratio: number | null
+    roe: number
+    earnings_growth: number | null
+    revenue_growth: number | null
+    price_position: number | null
+  }
+}
+
 export const api = {
+  async getQuote(symbol: string): Promise<DetailedQuote> {
+    const response = await fetch(`${API_URL}/evaluate/symbol/${encodeURIComponent(symbol.toUpperCase())}`)
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data?.error || 'Failed to fetch quote')
+    }
+
+    return data
+  },
+
   async getSectors(): Promise<Record<string, Stock[]>> {
     try {
       const response = await fetch(`${API_URL}/sectors`)

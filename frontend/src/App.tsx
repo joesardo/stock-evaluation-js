@@ -1,26 +1,45 @@
-import { useState, useRef } from 'react'
+import { FormEvent, useRef, useState } from 'react'
 import './App.css'
 import Watchlist from './components/Watchlist'
 import SectorBrowser from './components/SectorBrowser'
 import IndustryBrowser from './components/IndustryBrowser'
+import QuoteLookup from './components/QuoteLookup'
 
-type View = 'watchlist' | 'sectors' | 'industries'
-
-interface ViewState {
-  sectors?: any
-  industries?: any
-}
+type View = 'watchlist' | 'sectors' | 'industries' | 'quote'
 
 function App() {
   const [view, setView] = useState<View>('sectors')
+  const [quoteInput, setQuoteInput] = useState('')
+  const [selectedQuote, setSelectedQuote] = useState<string | null>(null)
   // Store component instances to preserve state when switching tabs
   const sectorBrowserRef = useRef<any>(null)
   const industryBrowserRef = useRef<any>(null)
 
+  const onQuoteSearch = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const symbol = quoteInput.trim().toUpperCase()
+    if (!symbol) return
+
+    setSelectedQuote(symbol)
+    setView('quote')
+  }
+
   return (
     <div className="app">
       <header className="header">
-        <h1>📊 Stock Evaluator</h1>
+        <div className="header-top">
+          <h1>📊 Stock Evaluator</h1>
+          <form className="quote-search-form" onSubmit={onQuoteSearch}>
+            <input
+              type="search"
+              value={quoteInput}
+              onChange={(e) => setQuoteInput(e.target.value)}
+              placeholder="Search quote (AAPL, MSFT, MFA...)"
+              aria-label="Search stock symbol"
+            />
+            <button className="btn" type="submit">Search</button>
+          </form>
+        </div>
         <nav className="nav">
           <button 
             className={`nav-btn ${view === 'watchlist' ? 'active' : ''}`}
@@ -40,6 +59,12 @@ function App() {
           >
             Industries
           </button>
+          <button 
+            className={`nav-btn ${view === 'quote' ? 'active' : ''}`}
+            onClick={() => setView('quote')}
+          >
+            Quote Search
+          </button>
         </nav>
       </header>
 
@@ -52,6 +77,9 @@ function App() {
         </div>
         <div style={{ display: view === 'industries' ? 'block' : 'none' }}>
           <IndustryBrowser ref={industryBrowserRef} />
+        </div>
+        <div style={{ display: view === 'quote' ? 'block' : 'none' }}>
+          <QuoteLookup symbol={selectedQuote} />
         </div>
       </main>
     </div>

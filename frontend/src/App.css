@@ -18,6 +18,30 @@
   font-weight: 700;
 }
 
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.header-top h1 {
+  margin-bottom: 0;
+}
+
+.quote-search-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(520px, 100%);
+}
+
+.quote-search-form input {
+  flex: 1;
+  min-width: 220px;
+}
+
 .nav {
   display: flex;
   gap: 1rem;
@@ -62,5 +86,18 @@
 
   .nav {
     flex-wrap: wrap;
+  }
+
+  .header-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .quote-search-form {
+    width: 100%;
+  }
+
+  .quote-search-form input {
+    min-width: 0;
   }
 }
