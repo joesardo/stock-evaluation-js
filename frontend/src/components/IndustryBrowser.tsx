@@ -157,36 +157,113 @@ function getIndustryGroup(name: string): string {
   return 'Other'
 }
 
-function getGroupRatesOutlook(group: string, regime: RatesRegime | null | undefined) {
+type OutlookTone = {
+  emoji: string
+  label: string
+  color: string
+  reason: string
+}
+
+function toneFromScore(score: number, reason: string): OutlookTone {
+  if (score >= 2) return { emoji: '🟢', label: 'Tailwind', color: '#10b981', reason }
+  if (score === 1) return { emoji: '🟩', label: 'Mild Tailwind', color: '#34d399', reason }
+  if (score === -1) return { emoji: '🟧', label: 'Mild Headwind', color: '#fb923c', reason }
+  if (score <= -2) return { emoji: '🔴', label: 'Headwind', color: '#ef4444', reason }
+  return { emoji: '⚪', label: 'Mixed', color: 'var(--text-secondary)', reason }
+}
+
+function getIndustryRatesOutlook(industryName: string, regime: RatesRegime | null | undefined): OutlookTone {
   if (!regime) {
-    return { emoji: 'ℹ️', label: 'Rates outlook unavailable', color: 'var(--text-secondary)' }
+    return toneFromScore(0, 'Rates outlook unavailable')
   }
 
+  const n = industryName.toLowerCase()
   const isHigh = regime.level === 'high'
   const isLow = regime.level === 'low'
   const isRising = regime.trend === 'rising'
   const isFalling = regime.trend === 'falling'
+  const isInverted = regime.curve === 'inverted'
 
-  const positiveInHighRates = new Set(['Financials', 'Energy'])
-  const negativeInHighRates = new Set(['Real Estate', 'Utilities', 'Consumer', 'Technology'])
-  const positiveInFallingRates = new Set(['Real Estate', 'Utilities', 'Technology', 'Consumer'])
-
-  if ((isHigh || isRising) && positiveInHighRates.has(group)) {
-    return { emoji: '🟢', label: 'Typically favored in high/rising rates', color: '#10b981' }
+  // Real-estate / long-duration financing sensitive
+  if (n.includes('real estate investment trusts') || n.includes('reit')) {
+    if (isHigh || isRising) return toneFromScore(-2, 'REIT cash flows are rate-sensitive; mortgage/financing pressure in high/rising rates')
+    if (isLow || isFalling) return toneFromScore(2, 'Lower/falling rates typically ease financing costs for REITs')
   }
-  if ((isHigh || isRising) && negativeInHighRates.has(group)) {
-    return { emoji: '🟡', label: 'Can face pressure in high/rising rates', color: '#f59e0b' }
-  }
-  if ((isLow || isFalling) && positiveInFallingRates.has(group)) {
-    return { emoji: '🟢', label: 'Typically favored in low/falling rates', color: '#10b981' }
+  if (n.includes('real estate development') || n.includes('homebuilding')) {
+    if (isHigh || isRising) return toneFromScore(-2, 'Mortgage affordability and project financing usually weaken in high/rising rates')
+    if (isLow || isFalling) return toneFromScore(2, 'Lower/falling rates can improve housing affordability and project economics')
   }
 
-  return { emoji: '⚪', label: 'Mixed rate sensitivity', color: 'var(--text-secondary)' }
-}
+  // Financials (nuanced: banks vs brokers/managers)
+  if (n.includes('regional banks') || n.includes('major banks') || n.includes('savings banks')) {
+    if (isHigh && !isInverted) return toneFromScore(2, 'Higher rates with normal curve can support bank net interest margins')
+    if (isInverted) return toneFromScore(-1, 'Inverted curve can pressure deposit spreads and lending profitability')
+    if (isFalling) return toneFromScore(-1, 'Falling rates can compress lending margins')
+  }
+  if (n.includes('insurance') || n.includes('specialty insurance') || n.includes('life/health insurance')) {
+    if (isHigh) return toneFromScore(1, 'Insurers can benefit from higher reinvestment yields')
+    if (isLow && isFalling) return toneFromScore(-1, 'Lower yields can pressure portfolio income for insurers')
+  }
+  if (n.includes('investment banks/brokers') || n.includes('investment managers') || n.includes('investment trusts/mutual funds')) {
+    if (isFalling) return toneFromScore(1, 'Falling rates often help risk assets and transaction sentiment')
+    if (isHigh && isRising) return toneFromScore(-1, 'Higher funding costs and tighter financial conditions can reduce activity')
+  }
 
-function getIndustryRatesOutlook(industryName: string, regime: RatesRegime | null | undefined) {
-  const group = getIndustryGroup(industryName)
-  return getGroupRatesOutlook(group, regime)
+  // Utilities / defensives with bond-like duration
+  if (n.includes('electric utilities') || n.includes('water utilities') || n.includes('gas distributors') || n.includes('alternative power generation')) {
+    if (isHigh || isRising) return toneFromScore(-2, 'Utility valuations and financing tend to face pressure in high/rising rates')
+    if (isLow || isFalling) return toneFromScore(2, 'Lower/falling rates are typically supportive for utility valuation multiples')
+  }
+
+  // Communications/media long-duration cash flows
+  if (n.includes('telecommunications') || n.includes('cable/satellite') || n.includes('broadcasting') || n.includes('media conglomerates')) {
+    if (isHigh || isRising) return toneFromScore(-1, 'Long-duration cash flows are usually less favored as discount rates rise')
+    if (isLow || isFalling) return toneFromScore(1, 'Lower discount rates can support valuation multiples')
+  }
+
+  // Growth tech duration effect
+  if (n.includes('software') || n.includes('internet') || n.includes('semiconductor') || n.includes('computer') || n.includes('electronic')) {
+    if (isHigh || isRising) return toneFromScore(-1, 'Higher rates typically pressure longer-duration growth valuations')
+    if (isLow || isFalling) return toneFromScore(1, 'Lower/falling rates often support growth valuation multiples')
+  }
+
+  // Consumer split: discretionary vs staples
+  if (
+    n.includes('apparel') || n.includes('specialty stores') || n.includes('department stores') ||
+    n.includes('discount stores') || n.includes('restaurants') || n.includes('hotels/resorts/cruise lines') ||
+    n.includes('casinos/gaming') || n.includes('recreational products') || n.includes('motor vehicles')
+  ) {
+    if (isHigh || isRising) return toneFromScore(-1, 'Discretionary demand can soften under higher financing costs')
+    if (isLow || isFalling) return toneFromScore(1, 'Easier financial conditions can support discretionary spending')
+  }
+  if (n.includes('food') || n.includes('beverages') || n.includes('tobacco') || n.includes('household/personal care') || n.includes('drugstore chains')) {
+    return toneFromScore(0, 'Staples are generally less rate-sensitive and more defensive')
+  }
+
+  // Energy and commodity-linked industries
+  if (n.includes('integrated oil') || n.includes('oil & gas') || n.includes('oilfield') || n.includes('oil refining/marketing') || n.includes('coal')) {
+    if (isHigh || isRising) return toneFromScore(2, 'Energy often benefits in inflationary/rising-rate macro backdrops')
+    if (isLow && isFalling) return toneFromScore(-1, 'Lower growth/inflation regimes can soften commodity support')
+  }
+
+  // Materials / metals cyclicality
+  if (n.includes('steel') || n.includes('metals') || n.includes('minerals') || n.includes('aluminum') || n.includes('chemicals') || n.includes('construction materials')) {
+    if (isHigh || isRising) return toneFromScore(1, 'Cyclicals/materials can benefit if rates are rising alongside nominal growth')
+    if (isLow && isFalling) return toneFromScore(-1, 'Disinflationary environments can reduce materials pricing support')
+  }
+
+  // Transport fuel/financing exposure
+  if (n.includes('airlines') || n.includes('trucking') || n.includes('marine shipping') || n.includes('air freight') || n.includes('railroads')) {
+    if (isHigh || isRising) return toneFromScore(-1, 'Transport names can face financing and cost pressures in tighter regimes')
+    if (isFalling) return toneFromScore(1, 'Easing conditions can be supportive for cyclic transport demand')
+  }
+
+  const fallbackGroup = getIndustryGroup(industryName)
+  if (fallbackGroup === 'Financials' && isInverted) {
+    return toneFromScore(-1, 'Inverted curve can pressure several spread-dependent financial business models')
+  }
+
+  return toneFromScore(0, 'No strong rates signal for this industry in the current regime')
 }
 
 const IndustryBrowser = forwardRef(function IndustryBrowser({ ratesRegime }: IndustryBrowserProps) {
@@ -298,6 +375,10 @@ const IndustryBrowser = forwardRef(function IndustryBrowser({ ratesRegime }: Ind
           Explore 120+ granular industry classifications. Each industry card includes a rates-sensitive outlook indicator based on the live rates regime.
         </p>
 
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '0.9rem', fontSize: '0.78rem' }}>
+          Legend: 🟢 Tailwind · 🟩 Mild Tailwind · ⚪ Mixed · 🟧 Mild Headwind · 🔴 Headwind
+        </p>
+
         <div className="input-group">
           <input
             type="search"
@@ -348,8 +429,12 @@ const IndustryBrowser = forwardRef(function IndustryBrowser({ ratesRegime }: Ind
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
                           {industry.count} stocks
                         </p>
-                        <div style={{ fontSize: '0.78rem', color: outlook.color }}>
-                          {outlook.emoji} {outlook.label}
+                        <div
+                          title={`${outlook.label}: ${outlook.reason}`}
+                          style={{ fontSize: '0.92rem', color: outlook.color }}
+                          aria-label={`${outlook.label}: ${outlook.reason}`}
+                        >
+                          {outlook.emoji}
                         </div>
                       </button>
                     )
